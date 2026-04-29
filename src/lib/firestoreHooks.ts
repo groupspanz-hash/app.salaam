@@ -42,7 +42,6 @@ export function useFirestoreCollection<T extends { id: string }>(
 
   const setFirestoreData = async (action: React.SetStateAction<T[]>) => {
     if (!user) {
-      // Offline / not logged in mode? Just local
       setData(action);
       return;
     }
@@ -56,25 +55,23 @@ export function useFirestoreCollection<T extends { id: string }>(
     try {
       const batch = writeBatch(db);
       
-      const newItemsMap = new Map(newData.map(item => [item.id, item]));
-      const oldItemsMap = new Map(oldData.map(item => [item.id, item]));
+      const newItemsMap = new Map((newData as T[]).map(item => [item.id, item]));
+      const oldItemsMap = new Map((oldData as T[]).map(item => [item.id, item]));
 
       // Add & Update
       for (const [id, item] of newItemsMap.entries()) {
         const path = `users/${user.uid}/${collectionName}`;
         const ref = doc(db, path, id as string);
         
-        // Always add userId before writing
-        const dataToWrite = { ...(item as object), userId: user.uid };
+        // Always add userId before writing and remove any unwanted keys
+        const cleanItem = { ...item };
+        delete (cleanItem as any).id; // ID is stored as doc ID
+
+        const dataToWrite = { ...cleanItem, userId: user.uid };
         
-        let oldItem = oldItemsMap.get(id);
-        if (!oldItem) {
-          batch.set(ref, dataToWrite); // create
-        } else {
-          // A simple hash/stringify check to avoid unnecessary writes
-          if (JSON.stringify(oldItem) !== JSON.stringify(item)) {
-            batch.set(ref, dataToWrite, { merge: true }); // update
-          }
+        const oldItem = oldItemsMap.get(id);
+        if (!oldItem || JSON.stringify(oldItem) !== JSON.stringify(item)) {
+          batch.set(ref, dataToWrite, { merge: true });
         }
       }
 
@@ -88,6 +85,8 @@ export function useFirestoreCollection<T extends { id: string }>(
 
       await batch.commit();
     } catch (err) {
+      // Rollback on failure
+      setData(oldData);
       handleFirestoreError(err, OperationType.WRITE, `users/${user.uid}/${collectionName}`);
     }
   };
@@ -139,14 +138,18 @@ export function useFirestoreDocument<T extends object>(
     }
 
     const newData = typeof action === 'function' ? (action as any)(data) : action;
+    const oldData = data;
     setData(newData);
 
     try {
       const path = `users/${user.uid}/${pathSuffix}`;
       const ref = doc(db, path);
-      const dataToWrite = { ...(newData as object), userId: user.uid };
+      const cleanData = { ...newData };
+      delete (cleanData as any).id;
+      const dataToWrite = { ...cleanData, userId: user.uid };
       await setDoc(ref, dataToWrite, { merge: true });
     } catch (err) {
+      setData(oldData);
       handleFirestoreError(err, OperationType.WRITE, `users/${user.uid}/${pathSuffix}`);
     }
   };
