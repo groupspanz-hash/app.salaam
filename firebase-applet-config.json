@@ -1,10 +1,10 @@
 {
-  "projectId": "gen-lang-client-0053573543",
-  "appId": "1:776251810531:web:bf5eee32d910a4403c9bd6",
-  "apiKey": "AIzaSyCUFlb8r9Lv48OnbXm1g2H-VNQpT3XpMDw",
-  "authDomain": "gen-lang-client-0053573543.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-12287b94-f3e1-4248-8fde-53b1df7927ac",
-  "storageBucket": "gen-lang-client-0053573543.firebasestorage.app",
-  "messagingSenderId": "776251810531",
+  "projectId": "app-salaam",
+  "appId": "1:219051786375:web:76da00b887303c5a9a7822",
+  "apiKey": "AIzaSyB-okpCESIuNOh1wRFivF9eSKeiE2DZlv0",
+  "authDomain": "app-salaam.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "app-salaam.firebasestorage.app",
+  "messagingSenderId": "219051786375",
   "measurementId": ""
 }
