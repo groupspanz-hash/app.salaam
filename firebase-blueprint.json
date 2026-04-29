@@ -1,0 +1,192 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Inventory product entity",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "buyPrice": { "type": "number" },
+        "sellPrice": { "type": "number" },
+        "stock": { "type": "number" },
+        "minStock": { "type": "number" },
+        "hasVariants": { "type": "boolean" },
+        "variants": { 
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "productId": { "type": "string" },
+              "name": { "type": "string" },
+              "buyPrice": { "type": "number" },
+              "sellPrice": { "type": "number" },
+              "stock": { "type": "number" }
+            }
+          }
+        }
+      },
+      "required": ["userId", "code", "name", "category", "buyPrice", "sellPrice", "stock", "minStock"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Sales transaction",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "customerName": { "type": "string" },
+        "items": { "type": "array" },
+        "subtotal": { "type": "number" },
+        "discount": { "type": "number" },
+        "tax": { "type": "number" },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string" }
+      },
+      "required": ["userId", "date", "items", "subtotal", "discount", "tax", "total", "paymentMethod"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Store expense",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "amount": { "type": "number" },
+        "description": { "type": "string" }
+      },
+      "required": ["userId", "date", "name", "category", "amount"]
+    },
+    "DigitalTopUp": {
+      "title": "DigitalTopUp",
+      "description": "Digital top-up record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "amount": { "type": "number" },
+        "platform": { "type": "string" },
+        "type": { "type": "string" }
+      },
+      "required": ["userId", "date", "amount", "platform", "type"]
+    },
+    "BankTransfer": {
+      "title": "BankTransfer",
+      "description": "Transfer funds between cash and bank",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "from": { "type": "string" },
+        "to": { "type": "string" },
+        "amount": { "type": "number" },
+        "note": { "type": "string" }
+      },
+      "required": ["userId", "date", "from", "to", "amount"]
+    },
+    "StockMovement": {
+      "title": "StockMovement",
+      "description": "Inventory stock movement",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "id": { "type": "string" },
+        "productId": { "type": "string" },
+        "productName": { "type": "string" },
+        "type": { "type": "string" },
+        "quantity": { "type": "number" },
+        "date": { "type": "string" },
+        "description": { "type": "string" },
+        "supplierId": { "type": "string" },
+        "returnReason": { "type": "string" }
+      },
+      "required": ["userId", "productId", "productName", "type", "quantity", "date"]
+    },
+    "Supplier": {
+      "title": "Supplier",
+      "description": "Product supplier",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "email": { "type": "string" }
+      },
+      "required": ["userId", "name", "phone", "address"]
+    },
+    "ReturnReason": {
+      "title": "ReturnReason",
+      "description": "Predefined return reasons",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "id": { "type": "string" },
+        "label": { "type": "string" }
+      },
+      "required": ["userId", "label"]
+    },
+    "StoreBalance": {
+      "title": "StoreBalance",
+      "description": "Global store balances",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "pulseBalance": { "type": "number" },
+        "transferBalance": { "type": "number" },
+        "cashBalance": { "type": "number" },
+        "bankBalance": { "type": "number" }
+      },
+      "required": ["userId", "pulseBalance", "transferBalance", "cashBalance", "bankBalance"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/products/{productId}": {
+      "schema": "Product",
+      "description": "Inventory products per user"
+    },
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Transactions per user"
+    },
+    "/users/{userId}/expenses/{expenseId}": {
+      "schema": "Expense",
+      "description": "Expenses per user"
+    },
+    "/users/{userId}/digitalTopups/{digitalTopupId}": {
+      "schema": "DigitalTopUp",
+      "description": "Digital topups per user"
+    },
+    "/users/{userId}/transfers/{transferId}": {
+      "schema": "BankTransfer",
+      "description": "Bank transfers per user"
+    },
+    "/users/{userId}/stockMovements/{stockMovementId}": {
+      "schema": "StockMovement",
+      "description": "Stock movements per user"
+    },
+    "/users/{userId}/suppliers/{supplierId}": {
+      "schema": "Supplier",
+      "description": "Suppliers per user"
+    },
+    "/users/{userId}/returnReasons/{reasonId}": {
+      "schema": "ReturnReason",
+      "description": "Return reasons per user"
+    },
+    "/users/{userId}/storeSettings/balances": {
+      "schema": "StoreBalance",
+      "description": "Global store balances per user"
+    }
+  }
+}

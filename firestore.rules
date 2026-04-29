@@ -1,0 +1,173 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      // In many generic Firebase setups, email might not be strictly required/verified unless configured.
+      // But standard is request.auth.token.email_verified == true
+      // We will assume Google SignIn sets this.
+      return request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation Helpers
+    function isValidProduct(data, userId) {
+      return (data.keys().hasAll(['userId', 'code', 'name', 'category', 'buyPrice', 'sellPrice', 'stock', 'minStock']) || data.keys().hasAll(['userId', 'id', 'code', 'name', 'category', 'buyPrice', 'sellPrice', 'stock', 'minStock']))
+        && data.userId == userId
+        && data.code is string && data.code.size() <= 100
+        && data.name is string && data.name.size() <= 200
+        && data.category is string && data.category.size() <= 100
+        && data.buyPrice is number
+        && data.sellPrice is number
+        && data.stock is number
+        && data.minStock is number
+        && (!('hasVariants' in data) || data.hasVariants is bool)
+        && (!('variants' in data) || (data.variants is list && data.variants.size() <= 50));
+    }
+
+    function isValidTransaction(data, userId) {
+      return data.keys().hasAll(['userId', 'date', 'items', 'subtotal', 'discount', 'tax', 'total', 'paymentMethod'])
+        && data.userId == userId
+        && data.date is string && data.date.size() <= 50
+        && data.subtotal is number && data.subtotal >= 0
+        && data.discount is number && data.discount >= 0
+        && data.tax is number && data.tax >= 0
+        && data.total is number && data.total >= 0
+        && data.paymentMethod is string && data.paymentMethod.size() <= 20
+        && data.items is list && data.items.size() <= 100;
+    }
+
+    function isValidExpense(data, userId) {
+      return data.keys().hasAll(['userId', 'date', 'name', 'category', 'amount'])
+        && data.userId == userId
+        && data.date is string && data.date.size() <= 50
+        && data.name is string && data.name.size() <= 200
+        && data.category is string && data.category.size() <= 100
+        && data.amount is number
+        && (!('description' in data) || (data.description is string && data.description.size() <= 1000));
+    }
+
+    function isValidDigitalTopUp(data, userId) {
+      return data.keys().hasAll(['userId', 'date', 'amount', 'platform', 'type'])
+        && data.userId == userId
+        && data.date is string && data.date.size() <= 50
+        && data.amount is number
+        && data.platform is string && data.platform.size() <= 100
+        && data.type is string && data.type.size() <= 50;
+    }
+
+    function isValidBankTransfer(data, userId) {
+      return data.keys().hasAll(['userId', 'date', 'from', 'to', 'amount'])
+        && data.userId == userId
+        && data.date is string && data.date.size() <= 50
+        && data.from is string && data.from.size() <= 50
+        && data.to is string && data.to.size() <= 50
+        && data.amount is number && data.amount > 0
+        && (!('note' in data) || (data.note is string && data.note.size() <= 1000));
+    }
+
+    function isValidStockMovement(data, userId) {
+      return data.keys().hasAll(['userId', 'productId', 'productName', 'type', 'quantity', 'date'])
+        && data.userId == userId
+        && data.productId is string && data.productId.size() <= 128
+        && data.productName is string && data.productName.size() <= 200
+        && data.type is string && data.type.size() <= 50
+        && data.quantity is number
+        && data.date is string && data.date.size() <= 50
+        && (!('description' in data) || (data.description is string && data.description.size() <= 1000));
+    }
+
+    function isValidStoreBalance(data, userId) {
+      return data.keys().hasAll(['userId', 'pulseBalance', 'transferBalance', 'cashBalance', 'bankBalance'])
+        && data.userId == userId
+        && data.pulseBalance is number
+        && data.transferBalance is number
+        && data.cashBalance is number
+        && data.bankBalance is number;
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+
+      match /products/{productId} {
+        allow read: if isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow create: if isOwner(userId) && isValidId(productId) && isValidProduct(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(productId) && isValidProduct(incoming(), userId)
+          && incoming().userId == existing().userId;
+        allow delete: if isOwner(userId) && isValidId(productId) && existing().userId == userId;
+      }
+
+      match /transactions/{transactionId} {
+        allow read: if isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow create: if isOwner(userId) && isValidId(transactionId) && isValidTransaction(incoming(), userId);
+        allow update: if false; // Immutable
+        allow delete: if false;
+      }
+
+      match /expenses/{expenseId} {
+        allow read: if isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow create: if isOwner(userId) && isValidId(expenseId) && isValidExpense(incoming(), userId);
+        allow update: if false;
+        allow delete: if false;
+      }
+
+      match /digitalTopups/{digitalTopupId} {
+        allow read: if isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow create: if isOwner(userId) && isValidId(digitalTopupId) && isValidDigitalTopUp(incoming(), userId);
+        allow update: if false;
+        allow delete: if false;
+      }
+
+      match /transfers/{transferId} {
+        allow read: if isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow create: if isOwner(userId) && isValidId(transferId) && isValidBankTransfer(incoming(), userId);
+        allow update: if false;
+        allow delete: if false;
+      }
+
+      match /stockMovements/{stockMovementId} {
+        allow read: if isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow create: if isOwner(userId) && isValidId(stockMovementId) && isValidStockMovement(incoming(), userId);
+        allow update: if false;
+        allow delete: if false;
+      }
+
+      match /storeSettings/balances {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidStoreBalance(incoming(), userId);
+        allow update: if isOwner(userId) && isValidStoreBalance(incoming(), userId)
+          && incoming().userId == existing().userId;
+      }
+    }
+  }
+}
