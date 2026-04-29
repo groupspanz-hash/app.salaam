@@ -44,7 +44,7 @@ export default function PulseView({
         isAdjustment: true,
         difference // store original difference
       };
-      setDigitalTopups([newTopup, ...digitalTopups]);
+      setDigitalTopups((prev: any) => [newTopup, ...prev]);
       
       if (adjustData.type === 'pulsa') {
          setPulseBalance(adjustData.amount);
@@ -75,7 +75,7 @@ export default function PulseView({
       isSale: false
     };
 
-    setDigitalTopups([newTopup, ...digitalTopups]);
+    setDigitalTopups((prev: any) => [newTopup, ...prev]);
     
     if (topupType === 'pulsa') {
       setPulseBalance((p: any) => p + val);

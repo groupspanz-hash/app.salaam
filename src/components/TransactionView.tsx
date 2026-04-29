@@ -249,7 +249,7 @@ export default function TransactionView({
       setBankBalance((p:any) => p + total);
     }
 
-    setTransactions([newTrx, ...transactions]);
+    setTransactions((prev: any) => [newTrx, ...prev]);
     setShowReceipt(newTrx);
     setCart([]); setCustomerName(''); setDiscount(0); setApplyTax(false);
   };

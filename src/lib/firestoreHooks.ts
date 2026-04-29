@@ -21,7 +21,7 @@ export function useFirestoreCollection<T extends { id: string }>(
     }
 
     const path = `users/${user.uid}/${collectionName}`;
-    const q = query(collection(db, path), where('userId', '==', user.uid));
+    const q = collection(db, path);
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {

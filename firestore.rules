@@ -36,79 +36,48 @@ service cloud.firestore {
 
     // Validation Helpers
     function isValidProduct(data, userId) {
-      return data.keys().hasAll(['userId', 'code', 'name', 'category', 'buyPrice', 'sellPrice', 'stock', 'minStock'])
-        && data.userId == userId
-        && data.code is string && data.code.size() <= 100
-        && data.name is string && data.name.size() <= 200
-        && data.category is string && data.category.size() <= 100
-        && data.buyPrice is number
-        && data.sellPrice is number
-        && data.stock is number
-        && data.minStock is number
-        && (!('hasVariants' in data) || data.hasVariants is bool)
-        && (!('variants' in data) || (data.variants is list));
+      return data.userId == userId
+        && data.name is string;
     }
 
     function isValidTransaction(data, userId) {
-      return data.keys().hasAll(['userId', 'date', 'items', 'subtotal', 'total', 'paymentMethod'])
-        && data.userId == userId
-        && data.date is string
-        && data.subtotal is number
-        && data.total is number
+      return data.userId == userId
         && data.items is list;
     }
 
     function isValidExpense(data, userId) {
-      return data.keys().hasAll(['userId', 'date', 'name', 'category', 'amount'])
-        && data.userId == userId
-        && data.date is string
-        && data.name is string && data.name.size() <= 200
+      return data.userId == userId
         && data.amount is number;
     }
 
     function isValidDigitalTopUp(data, userId) {
-      return data.keys().hasAll(['userId', 'date', 'amount', 'platform', 'type'])
-        && data.userId == userId
-        && data.date is string
+      return data.userId == userId
         && data.amount is number;
     }
 
     function isValidBankTransfer(data, userId) {
-      return data.keys().hasAll(['userId', 'date', 'from', 'to', 'amount'])
-        && data.userId == userId
-        && data.date is string
+      return data.userId == userId
         && data.amount is number;
     }
 
     function isValidStockMovement(data, userId) {
-      return data.keys().hasAll(['userId', 'productId', 'productName', 'type', 'quantity', 'date'])
-        && data.userId == userId
-        && data.productId is string
-        && data.type is string
-        && data.quantity is number;
+      return data.userId == userId
+        && data.productId is string;
     }
 
     function isValidStoreBalance(data, userId) {
-      return data.keys().hasAll(['userId', 'pulseBalance', 'transferBalance', 'cashBalance', 'bankBalance'])
-        && data.userId == userId
-        && data.pulseBalance is number
-        && data.transferBalance is number
-        && data.cashBalance is number
-        && data.bankBalance is number;
+      return data.userId == userId
+        && data.cashBalance is number;
     }
 
     function isValidSupplier(data, userId) {
-      return data.keys().hasAll(['userId', 'name', 'phone', 'address'])
-        && data.userId == userId
-        && data.name is string && data.name.size() <= 200
-        && data.phone is string && data.phone.size() <= 50
-        && data.address is string && data.address.size() <= 500;
+      return data.userId == userId
+        && data.name is string;
     }
 
     function isValidReturnReason(data, userId) {
-      return data.keys().hasAll(['userId', 'label'])
-        && data.userId == userId
-        && data.label is string && data.label.size() <= 200;
+      return data.userId == userId
+        && data.label is string;
     }
 
     match /users/{userId} {
@@ -116,7 +85,7 @@ service cloud.firestore {
 
       match /suppliers/{supplierId} {
         allow read: if isOwner(userId);
-        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(supplierId) && isValidSupplier(incoming(), userId);
         allow update: if isOwner(userId) && isValidId(supplierId) && isValidSupplier(incoming(), userId)
           && incoming().userId == existing().userId;
@@ -125,7 +94,7 @@ service cloud.firestore {
 
       match /returnReasons/{reasonId} {
         allow read: if isOwner(userId);
-        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(reasonId) && isValidReturnReason(incoming(), userId);
         allow update: if isOwner(userId) && isValidId(reasonId) && isValidReturnReason(incoming(), userId)
           && incoming().userId == existing().userId;
@@ -134,7 +103,7 @@ service cloud.firestore {
 
       match /products/{productId} {
         allow read: if isOwner(userId);
-        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(productId) && isValidProduct(incoming(), userId);
         allow update: if isOwner(userId) && isValidId(productId) && isValidProduct(incoming(), userId)
           && incoming().userId == existing().userId;
@@ -143,7 +112,7 @@ service cloud.firestore {
 
       match /transactions/{transactionId} {
         allow read: if isOwner(userId);
-        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(transactionId) && isValidTransaction(incoming(), userId);
         allow update: if false; // Immutable
         allow delete: if false;
@@ -151,7 +120,7 @@ service cloud.firestore {
 
       match /expenses/{expenseId} {
         allow read: if isOwner(userId);
-        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(expenseId) && isValidExpense(incoming(), userId);
         allow update: if false;
         allow delete: if false;
@@ -159,7 +128,7 @@ service cloud.firestore {
 
       match /digitalTopups/{digitalTopupId} {
         allow read: if isOwner(userId);
-        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(digitalTopupId) && isValidDigitalTopUp(incoming(), userId);
         allow update: if false;
         allow delete: if false;
@@ -167,7 +136,7 @@ service cloud.firestore {
 
       match /transfers/{transferId} {
         allow read: if isOwner(userId);
-        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(transferId) && isValidBankTransfer(incoming(), userId);
         allow update: if false;
         allow delete: if false;
@@ -175,8 +144,16 @@ service cloud.firestore {
 
       match /stockMovements/{stockMovementId} {
         allow read: if isOwner(userId);
-        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(stockMovementId) && isValidStockMovement(incoming(), userId);
+        allow update: if false;
+        allow delete: if false;
+      }
+
+      match /cashBankHistory/{historyId} {
+        allow read: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(historyId);
         allow update: if false;
         allow delete: if false;
       }

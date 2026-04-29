@@ -183,7 +183,7 @@ export default function StockView({
             }
           }
        }
-       setProducts(products.map((p:any) => p.id === showModal.id ? { ...productData, stock: finalStock } : p));
+       setProducts((prev: any) => prev.map((p:any) => p.id === showModal.id ? { ...productData, stock: finalStock } : p));
     } else {
        movementQty = hasVariants ? finalStock : Number(showModal.stock || 0);
        expenseAmount = hasVariants && updatedVariants.length > 0 
@@ -194,7 +194,7 @@ export default function StockView({
        
        const finalVariants = hasVariants ? updatedVariants.map(v => ({ ...v, productId: newId })) : [];
        
-       setProducts([...products, { ...productData, id: newId, stock: finalStock, variants: finalVariants }]);
+       setProducts((prev: any) => [...prev, { ...productData, id: newId, stock: finalStock, variants: finalVariants }]);
        logMovement(newId, showModal.name!, 'in', movementQty, `Stok awal barang baru`);
        if (expenseAmount > 0) processExpense(showModal.name!, expenseAmount);
     }
@@ -243,7 +243,7 @@ export default function StockView({
   };
 
   const handleDelete = (product: Product) => {
-    setProducts(products.filter((item:any) => item.id !== product.id));
+    setProducts((prev: any) => prev.filter((item:any) => item.id !== product.id));
     logMovement(product.id, product.name, 'adjustment', -product.stock, `Barang dihapus dari sistem`);
     setConfirmDelete(null);
   };
