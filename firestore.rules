@@ -98,7 +98,9 @@ service cloud.firestore {
         && data.type is string && data.type.size() <= 50
         && data.quantity is number
         && data.date is string && data.date.size() <= 50
-        && (!('description' in data) || (data.description is string && data.description.size() <= 1000));
+        && (!('description' in data) || (data.description is string && data.description.size() <= 1000))
+        && (!('supplierId' in data) || (data.supplierId is string && data.supplierId.size() <= 128))
+        && (!('returnReason' in data) || (data.returnReason is string && data.returnReason.size() <= 200));
     }
 
     function isValidStoreBalance(data, userId) {
@@ -110,8 +112,40 @@ service cloud.firestore {
         && data.bankBalance is number;
     }
 
+    function isValidSupplier(data, userId) {
+      return data.keys().hasAll(['userId', 'name', 'phone', 'address'])
+        && data.userId == userId
+        && data.name is string && data.name.size() <= 200
+        && data.phone is string && data.phone.size() <= 50
+        && data.address is string && data.address.size() <= 500;
+    }
+
+    function isValidReturnReason(data, userId) {
+      return data.keys().hasAll(['userId', 'label'])
+        && data.userId == userId
+        && data.label is string && data.label.size() <= 200;
+    }
+
     match /users/{userId} {
       allow read: if isOwner(userId);
+
+      match /suppliers/{supplierId} {
+        allow read: if isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow create: if isOwner(userId) && isValidId(supplierId) && isValidSupplier(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(supplierId) && isValidSupplier(incoming(), userId)
+          && incoming().userId == existing().userId;
+        allow delete: if isOwner(userId) && isValidId(supplierId) && existing().userId == userId;
+      }
+
+      match /returnReasons/{reasonId} {
+        allow read: if isOwner(userId);
+        allow list: if isOwner(userId) && resource.data.userId == userId;
+        allow create: if isOwner(userId) && isValidId(reasonId) && isValidReturnReason(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(reasonId) && isValidReturnReason(incoming(), userId)
+          && incoming().userId == existing().userId;
+        allow delete: if isOwner(userId) && isValidId(reasonId) && existing().userId == userId;
+      }
 
       match /products/{productId} {
         allow read: if isOwner(userId);
