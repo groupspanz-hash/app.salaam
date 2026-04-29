@@ -83,83 +83,54 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isOwner(userId);
 
+      // Allow all sub-collections for the owner
+      match /{allSubcollections=**} {
+        allow read, write: if isOwner(userId);
+      }
+
       match /suppliers/{supplierId} {
-        allow read: if isOwner(userId);
-        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(supplierId) && isValidSupplier(incoming(), userId);
         allow update: if isOwner(userId) && isValidId(supplierId) && isValidSupplier(incoming(), userId)
           && incoming().userId == existing().userId;
-        allow delete: if isOwner(userId) && isValidId(supplierId) && existing().userId == userId;
       }
 
       match /returnReasons/{reasonId} {
-        allow read: if isOwner(userId);
-        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(reasonId) && isValidReturnReason(incoming(), userId);
         allow update: if isOwner(userId) && isValidId(reasonId) && isValidReturnReason(incoming(), userId)
           && incoming().userId == existing().userId;
-        allow delete: if isOwner(userId) && isValidId(reasonId) && existing().userId == userId;
       }
 
       match /products/{productId} {
-        allow read: if isOwner(userId);
-        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(productId) && isValidProduct(incoming(), userId);
         allow update: if isOwner(userId) && isValidId(productId) && isValidProduct(incoming(), userId)
           && incoming().userId == existing().userId;
-        allow delete: if isOwner(userId) && isValidId(productId) && existing().userId == userId;
       }
-
+      
       match /transactions/{transactionId} {
-        allow read: if isOwner(userId);
-        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(transactionId) && isValidTransaction(incoming(), userId);
-        allow update: if false; // Immutable
-        allow delete: if false;
       }
 
       match /expenses/{expenseId} {
-        allow read: if isOwner(userId);
-        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(expenseId) && isValidExpense(incoming(), userId);
-        allow update: if false;
-        allow delete: if false;
       }
 
       match /digitalTopups/{digitalTopupId} {
-        allow read: if isOwner(userId);
-        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(digitalTopupId) && isValidDigitalTopUp(incoming(), userId);
-        allow update: if false;
-        allow delete: if false;
       }
 
       match /transfers/{transferId} {
-        allow read: if isOwner(userId);
-        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(transferId) && isValidBankTransfer(incoming(), userId);
-        allow update: if false;
-        allow delete: if false;
       }
 
       match /stockMovements/{stockMovementId} {
-        allow read: if isOwner(userId);
-        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(stockMovementId) && isValidStockMovement(incoming(), userId);
-        allow update: if false;
-        allow delete: if false;
       }
 
       match /cashBankHistory/{historyId} {
-        allow read: if isOwner(userId);
-        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && isValidId(historyId);
-        allow update: if false;
-        allow delete: if false;
       }
 
       match /storeSettings/balances {
-        allow read: if isOwner(userId);
         allow create: if isOwner(userId) && isValidStoreBalance(incoming(), userId);
         allow update: if isOwner(userId) && isValidStoreBalance(incoming(), userId)
           && incoming().userId == existing().userId;

@@ -118,8 +118,8 @@ export function useFirestoreDocument<T extends object>(
         if (docSnap.exists()) {
           setData(docSnap.data() as T);
         } else {
-           // Document doesn't exist, will be created on first write
-           setData(initialData);
+          // If document doesn't exist, use initialData
+          setData(initialData);
         }
         setInitialized(true);
       },
