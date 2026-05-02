@@ -325,8 +325,8 @@ export default function App() {
       </aside>
 
       {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex items-center justify-around h-16 px-2 safe-area-bottom shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
-        {sidebarItems.slice(0, 5).map((item) => {
+      <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-slate-900/90 backdrop-blur-xl border border-white/10 z-50 flex items-center justify-around h-16 px-2 rounded-[24px] shadow-2xl safe-area-bottom">
+        {sidebarItems.slice(0, 4).map((item) => {
           const Icon = item.icon;
           const isActive = activeView === item.id;
           return (
@@ -334,21 +334,37 @@ export default function App() {
               key={item.id}
               onClick={() => setActiveView(item.id as View)}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 flex-1 py-1 px-1 transition-all",
-                isActive ? "text-emerald-600" : "text-slate-400"
+                "flex flex-col items-center justify-center gap-1 flex-1 py-1 transition-all relative",
+                isActive ? "text-emerald-400" : "text-slate-400"
               )}
             >
               <div className={cn(
-                "p-1 rounded-lg transition-all",
-                isActive ? "bg-emerald-50" : ""
+                "p-1.5 rounded-xl transition-all",
+                isActive ? "bg-white/10" : ""
               )}>
                 <Icon className={cn("w-5 h-5", isActive ? "stroke-[2.5]" : "stroke-[2]")} />
               </div>
-              <span className="text-[9px] font-bold uppercase tracking-tight">{item.label}</span>
-              {isActive && <motion.div layoutId="nav-indicator" className="w-1 h-1 bg-emerald-600 rounded-full mt-0.5" />}
+              <span className="text-[7px] font-black uppercase tracking-widest">{item.label}</span>
             </button>
           );
         })}
+        
+        {/* Mobile Quick Role Switcher Button */}
+        <button
+          onClick={() => setIsProfileMenuOpen(true)}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 flex-1 py-1 transition-all",
+            isProfileMenuOpen ? "text-emerald-400" : "text-slate-400"
+          )}
+        >
+          <div className={cn(
+            "w-8 h-8 rounded-xl flex items-center justify-center font-black text-[9px] border transition-all",
+            userRole === 'owner' ? "bg-emerald-500 border-emerald-400 text-white" : "bg-blue-500 border-blue-400 text-white"
+          )}>
+            {userRole === 'owner' ? 'OW' : 'AD'}
+          </div>
+          <span className="text-[7px] font-black uppercase tracking-widest">Menu</span>
+        </button>
       </nav>
 
       <main className="flex-1 flex flex-col h-full overflow-hidden pb-16 md:pb-0">
@@ -360,7 +376,29 @@ export default function App() {
              <h1 className="text-base md:text-xl font-black text-slate-800 uppercase tracking-tight">{activeView.replace('-', ' ')}</h1>
           </div>
           
-          <div className="flex items-center gap-3 md:gap-6 text-slate-600">
+          <div className="flex items-center gap-3 md:gap-5 text-slate-600">
+            {/* Desktop Role Switcher */}
+            <div className="hidden lg:flex items-center bg-slate-100 p-1 rounded-2xl gap-1">
+              <button 
+                onClick={() => handleRoleSwitch('admin')}
+                className={cn(
+                  "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                  userRole === 'admin' ? "bg-white text-blue-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                )}
+              >
+                Kasir
+              </button>
+              <button 
+                onClick={() => handleRoleSwitch('owner')}
+                className={cn(
+                  "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                  userRole === 'owner' ? "bg-white text-emerald-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                )}
+              >
+                Owner
+              </button>
+            </div>
+
             <div className="hidden sm:flex flex-col text-right text-xs">
               <div className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Hari ini</div>
               <div className="font-bold text-slate-800">{new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</div>

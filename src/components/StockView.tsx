@@ -469,233 +469,243 @@ export default function StockView({
 
         {showModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6">
-            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-               <div className="p-6 border-b flex justify-between items-center shrink-0">
-                 <h3 className="font-black text-slate-800 uppercase tracking-widest">
-                   {showModal.id ? (
-                     modalMode === 'add' ? `Tambah Stok: ${showModal.name}` :
-                     modalMode === 'reduce' ? `Kurangi Stok: ${showModal.name}` :
-                     `Penyesuaian: ${showModal.name}`
-                   ) : 'Tambah Barang Baru'}
-                 </h3>
-                 <button onClick={() => setShowModal(null)} className="p-2 hover:bg-slate-50 rounded-full"><X className="w-5 h-5 text-slate-400" /></button>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[32px] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] relative">
+               <div className="p-5 sm:p-7 border-b flex justify-between items-center shrink-0 bg-white z-10">
+                 <div>
+                   <h3 className="font-extrabold text-lg sm:text-xl text-slate-900 uppercase tracking-tight leading-tight">
+                     {showModal.id ? (
+                       modalMode === 'add' ? `Restok: ${showModal.name}` :
+                       modalMode === 'reduce' ? `Kurangi: ${showModal.name}` :
+                       `Edit: ${showModal.name}`
+                     ) : 'Tambah Barang Baru'}
+                   </h3>
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Konfigurasi Inventori Unit</p>
+                 </div>
+                 <button onClick={() => setShowModal(null)} className="p-2.5 hover:bg-slate-50 rounded-full transition-all active:scale-90 shadow-sm border border-slate-100"><X className="w-5 h-5 text-slate-400" /></button>
                </div>
-               <form onSubmit={handleSave} className="p-8 space-y-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 overflow-y-auto no-scrollbar">
-                 <div className="col-span-2 space-y-1 relative">
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Barang</label>
-                   <input required className="w-full bg-slate-50 px-4 py-3 border-none rounded-2xl text-sm" value={showModal.name} onChange={e => setShowModal({...showModal, name: e.target.value})} readOnly={showModal.id !== undefined && modalMode !== 'adjust'} />
-                   
-                   {modalMode === 'new' && showModal.name && showModal.name.length > 2 && products.some((p:any) => p.name.toLowerCase().includes(showModal.name!.toLowerCase())) && (
-                     <div className="absolute top-full left-0 right-0 z-10 bg-white border border-slate-100 rounded-2xl shadow-xl mt-1 overflow-hidden">
-                       {products.filter((p:any) => p.name.toLowerCase().includes(showModal.name!.toLowerCase())).slice(0, 3).map((p:any) => (
-                         <button key={p.id} type="button" onClick={() => setShowModal(p)} className="w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center justify-between">
-                            <span className="text-sm font-bold text-slate-800">{p.name}</span>
-                            <span className="text-[10px] font-black text-emerald-500 uppercase">Pilih (Sudah Ada)</span>
-                         </button>
-                       ))}
+                <form onSubmit={handleSave} className="p-6 sm:p-9 flex-1 overflow-y-auto no-scrollbar scroll-smooth">
+                  <div className="col-span-1 md:col-span-2 space-y-1.5 relative">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Barang</label>
+                    <input required className="w-full bg-slate-50 px-5 py-4 border-2 border-transparent focus:border-slate-100 rounded-2xl text-base font-bold outline-none transition-all shadow-sm" value={showModal.name} onChange={e => setShowModal({...showModal, name: e.target.value})} readOnly={showModal.id !== undefined && modalMode !== 'adjust'} placeholder="Contoh: Kopi Kapal Api" />
+                    
+                    {modalMode === 'new' && showModal.name && showModal.name.length > 2 && products.some((p:any) => p.name.toLowerCase().includes(showModal.name!.toLowerCase())) && (
+                      <div className="absolute top-[calc(100%+4px)] left-0 right-0 z-20 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden">
+                        {products.filter((p:any) => p.name.toLowerCase().includes(showModal.name!.toLowerCase())).slice(0, 3).map((p:any) => (
+                          <button key={p.id} type="button" onClick={() => setShowModal(p)} className="w-full px-5 py-4 text-left hover:bg-slate-50 flex items-center justify-between border-b border-slate-50 last:border-0 transition-colors">
+                             <div>
+                               <div className="text-[11px] font-black text-slate-800 uppercase leading-none mb-1">{p.name}</div>
+                               <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{p.code}</div>
+                             </div>
+                             <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded-lg">Gunakan Data</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Kode Barang</label>
+                    <input required className="w-full bg-slate-50 px-4 py-3.5 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-slate-200 outline-none transition-all" value={showModal.code} onChange={e => setShowModal({...showModal, code: e.target.value})} readOnly={showModal.id !== undefined && modalMode !== 'adjust'} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Kategori</label>
+                    <input required className="w-full bg-slate-50 px-4 py-3.5 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-slate-200 outline-none transition-all" value={showModal.category} onChange={e => setShowModal({...showModal, category: e.target.value})} readOnly={showModal.id !== undefined && modalMode !== 'adjust'} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Harga Beli</label>
+                    <input required type="number" disabled={showModal.hasVariants} className={cn("w-full bg-slate-50 px-4 py-3.5 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-slate-200 outline-none transition-all", showModal.hasVariants ? "opacity-40 cursor-not-allowed" : "")} value={showModal.buyPrice || ''} onChange={e => setShowModal({...showModal, buyPrice: Number(e.target.value)})} readOnly={showModal.id !== undefined && modalMode !== 'adjust'} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Harga Jual</label>
+                    <input required type="number" disabled={showModal.hasVariants} className={cn("w-full bg-slate-50 px-4 py-3.5 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-slate-200 outline-none transition-all", showModal.hasVariants ? "opacity-40 cursor-not-allowed" : "")} value={showModal.sellPrice || ''} onChange={e => setShowModal({...showModal, sellPrice: Number(e.target.value)})} readOnly={showModal.id !== undefined && modalMode !== 'adjust'} />
+                  </div>
+
+                  <div className="col-span-1 md:col-span-2 py-4 flex flex-col sm:flex-row items-center gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                     <button 
+                       type="button"
+                       onClick={() => {
+                         const newVal = !showModal.hasVariants;
+                         setShowModal({ ...showModal, hasVariants: newVal });
+                         if (newVal && variants.length === 0) {
+                           setVariants([{ id: 'v1', productId: showModal.id || '', name: 'Varian 1', stock: showModal.stock || 0 }]);
+                         }
+                       }}
+                       className={cn(
+                         "flex items-center gap-3 px-5 py-3 rounded-2xl text-[10px] font-black uppercase transition-all shadow-sm active:scale-95 shrink-0",
+                         showModal.hasVariants ? "bg-slate-900 text-white" : "bg-white text-slate-400 border border-slate-200"
+                       )}
+                     >
+                       {showModal.hasVariants ? <Check className="w-4 h-4 text-emerald-400" /> : <Plus className="w-4 h-4" />}
+                       Barang Memiliki Varian
+                     </button>
+                     <p className="text-[9px] font-bold text-slate-400 leading-relaxed max-w-xs">Pilih jika barang memiliki ukuran, warna, atau jenis yang berbeda namun satu kesatuan produk.</p>
+                  </div>
+
+                  {showModal.hasVariants && (
+                    <div className="col-span-1 md:col-span-2 space-y-4 bg-slate-100/50 p-4 sm:p-5 rounded-[28px] border border-slate-200/50">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-2 px-1">
+                        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Konfigurasi Varian</h4>
+                        {(!showModal.id || modalMode === 'adjust') && (
+                          <button type="button" onClick={addVariant} className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase shadow-lg active:scale-95 transition-all w-full sm:w-auto justify-center"><Plus className="w-3.5 h-3.5" />Tambah Varian</button>
+                        )}
+                      </div>
+                      <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1 no-scrollbar pb-2">
+                         {variants.map((v, idx) => (
+                           <div key={v.id} className="bg-white p-4 rounded-[24px] shadow-sm border border-slate-200/60 transition-all hover:border-slate-300">
+                             <div className="flex justify-between items-center mb-3">
+                               <span className="text-[10px] font-black text-slate-400 uppercase">Varian #{idx + 1}</span>
+                                {(!showModal.id || modalMode === 'adjust') && variants.length > 1 && (
+                                  <button type="button" onClick={() => removeVariant(v.id)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                )}
+                             </div>
+                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                                <div className="space-y-1">
+                                  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Nama Varian</label>
+                                  <input required disabled={showModal.id !== undefined && modalMode !== 'adjust'} className={cn("w-full bg-slate-50 px-3.5 py-3 rounded-xl text-xs font-bold outline-none", showModal.id && modalMode !== 'adjust' ? "opacity-50" : "focus:ring-2 focus:ring-slate-100 border border-slate-100")} value={v.name} onChange={e => updateVariant(v.id, 'name', e.target.value)} placeholder="Contoh: XL, Hitam, dsb" />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Harga Beli</label>
+                                  <input required disabled={showModal.id !== undefined && modalMode !== 'adjust'} type="number" className={cn("w-full bg-slate-50 px-3.5 py-3 rounded-xl text-xs font-bold outline-none", showModal.id && modalMode !== 'adjust' ? "opacity-50" : "focus:ring-2 focus:ring-slate-100 border border-slate-100")} value={v.buyPrice || ''} onChange={e => updateVariant(v.id, 'buyPrice', Number(e.target.value))} placeholder={showModal.buyPrice?.toString() || '0'} />
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Harga Jual</label>
+                                  <input required disabled={showModal.id !== undefined && modalMode !== 'adjust'} type="number" className={cn("w-full bg-slate-50 px-3.5 py-3 rounded-xl text-xs font-bold outline-none", showModal.id && modalMode !== 'adjust' ? "opacity-50" : "focus:ring-2 focus:ring-slate-100 border border-slate-100")} value={v.sellPrice || ''} onChange={e => updateVariant(v.id, 'sellPrice', Number(e.target.value))} placeholder={showModal.sellPrice?.toString() || '0'} />
+                                </div>
+                             </div>
+                             
+                             <div className="bg-slate-50 px-4 py-3 sm:py-4 rounded-[22px] border border-slate-100">
+                               {(!showModal.id || modalMode === 'adjust') ? (
+                                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                                   <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest text-center sm:text-left">Stok Unit Tersedia</label>
+                                   <input type="number" className="w-full sm:w-28 bg-white px-3 py-2.5 rounded-xl text-sm font-black text-center border border-slate-200 outline-none focus:ring-4 focus:ring-slate-100" value={v.stock} onChange={e => updateVariant(v.id, 'stock', Number(e.target.value))} />
+                                 </div>
+                               ) : (
+                                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                                   <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+                                     <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Stok Aktif</div>
+                                     <div className="bg-white px-3 py-1.5 rounded-lg text-xs font-black border border-slate-100 text-slate-600 shadow-sm">{v.stock}</div>
+                                   </div>
+                                   <div className="flex items-center gap-3 w-full sm:w-auto">
+                                     <label className={cn("text-[8px] font-black uppercase tracking-widest whitespace-nowrap", modalMode === 'add' ? "text-emerald-500" : "text-rose-500")}>
+                                       {modalMode === 'add' ? 'Tambah' : 'Kurangi'}
+                                     </label>
+                                     <input 
+                                       type="number" 
+                                       min="0"
+                                       max={modalMode === 'reduce' ? v.stock : undefined}
+                                       className={cn("flex-1 sm:w-24 bg-white px-3 py-2.5 rounded-xl text-xs font-black text-center border outline-none transition-all", modalMode === 'add' ? "border-emerald-200 focus:ring-4 focus:ring-emerald-50" : "border-rose-200 focus:ring-4 focus:ring-rose-50")} 
+                                       value={variantAdjustments[v.id] || ''} 
+                                       onChange={e => handleVariantAdjustment(v.id, Number(e.target.value))} 
+                                       placeholder="0"
+                                     />
+                                   </div>
+                                 </div>
+                               )}
+                             </div>
+                           </div>
+                         ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                    {showModal.id && (modalMode === 'add' || modalMode === 'reduce' || modalMode === 'return') && (
+                      <div className={cn(
+                        "col-span-1 md:col-span-2 p-4 sm:p-6 rounded-[32px] border-2 border-dashed flex flex-col gap-6",
+                        modalMode === 'add' ? "bg-emerald-50/50 border-emerald-200" : 
+                        modalMode === 'return' ? "bg-orange-50/50 border-orange-200" :
+                        "bg-rose-50/50 border-rose-200"
+                      )}>
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                          <div className="shrink-0 text-center sm:text-left">
+                            <div className={cn("text-[9px] font-black uppercase tracking-[0.2em] mb-1.5", modalMode === 'add' ? "text-emerald-600" : modalMode === 'return' ? "text-orange-600" : "text-rose-600")}>Stok System Saat Ini</div>
+                            <div className="text-[14px] font-black bg-white/80 backdrop-blur-sm px-4 py-2 rounded-xl border border-white inline-block shadow-sm">{showModal.stock} Unit</div>
+                          </div>
+                          <div className="w-full sm:w-auto text-center sm:text-right">
+                            <label className={cn("text-[10px] font-black uppercase tracking-[0.2em] block mb-2", modalMode === 'add' ? "text-emerald-700" : modalMode === 'return' ? "text-orange-700" : "text-rose-700")}>
+                              {modalMode === 'add' ? 'Jumlah Restock Baru' : 'Jumlah Keluar / Retur'}
+                            </label>
+                            <input 
+                              autoFocus 
+                              required 
+                              type="number" 
+                              className={cn(
+                                "w-full sm:w-40 bg-white px-5 py-4 border-2 rounded-[24px] text-2xl font-black text-center outline-none transition-all focus:ring-4 shadow-xl",
+                                modalMode === 'add' ? "border-emerald-500 focus:ring-emerald-500/10" : 
+                                modalMode === 'return' ? "border-orange-500 focus:ring-orange-500/10" :
+                                "border-rose-500 focus:ring-rose-500/10"
+                              )} 
+                              value={qtyInput || ''} 
+                              onChange={e => setQtyInput(Number(e.target.value))} 
+                              placeholder="0"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                   {modalMode === 'add' && (
+                     <div className="col-span-1 md:col-span-2 space-y-5 pt-2">
+                       <div className="space-y-2">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Pilih Supplier</label>
+                         <select required className="w-full bg-slate-50 px-5 py-4 border-2 border-transparent focus:border-slate-200 rounded-[24px] text-xs font-black uppercase tracking-wider outline-none appearance-none cursor-pointer" value={selectedSupplierId} onChange={e => setSelectedSupplierId(e.target.value)}>
+                           <option value="">-- PILIH SUMBER SUPPLIER --</option>
+                           {suppliers.map((s: any) => (
+                             <option key={s.id} value={s.id}>{s.name.toUpperCase()}</option>
+                           ))}
+                         </select>
+                       </div>
+                       <div className="p-6 bg-slate-900 rounded-[32px] border border-slate-800 shadow-2xl">
+                         <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] block mb-4 text-center">Metode Pembayaran Restock</label>
+                         <div className="flex gap-3">
+                           <button type="button" onClick={() => setPaymentSource('cash')} className={cn("flex-1 py-4 rounded-2xl border-2 font-black uppercase text-[9px] tracking-widest transition-all active:scale-95", paymentSource === 'cash' ? "bg-white border-white text-slate-900 shadow-xl" : "bg-white/5 border-transparent text-white/40")}>Cash</button>
+                           <button type="button" onClick={() => setPaymentSource('bank')} className={cn("flex-1 py-4 rounded-2xl border-2 font-black uppercase text-[9px] tracking-widest transition-all active:scale-95", paymentSource === 'bank' ? "bg-white border-white text-slate-900 shadow-xl" : "bg-white/5 border-transparent text-white/40")}>M-Bank</button>
+                         </div>
+                       </div>
                      </div>
                    )}
-                 </div>
-                 <div className="space-y-1">
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kode</label>
-                   <input required className="w-full bg-slate-50 px-4 py-3 border-none rounded-2xl text-sm" value={showModal.code} onChange={e => setShowModal({...showModal, code: e.target.value})} readOnly={showModal.id !== undefined && modalMode !== 'adjust'} />
-                 </div>
-                 <div className="space-y-1">
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kategori</label>
-                   <input required className="w-full bg-slate-50 px-4 py-3 border-none rounded-2xl text-sm" value={showModal.category} onChange={e => setShowModal({...showModal, category: e.target.value})} readOnly={showModal.id !== undefined && modalMode !== 'adjust'} />
-                 </div>
-                 <div className="space-y-1">
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Harga Beli</label>
-                   <input required type="number" disabled={showModal.hasVariants} className={cn("w-full bg-slate-50 px-4 py-3 border-none rounded-2xl text-sm", showModal.hasVariants ? "opacity-50 cursor-not-allowed" : "")} value={showModal.buyPrice} onChange={e => setShowModal({...showModal, buyPrice: Number(e.target.value)})} readOnly={showModal.id !== undefined && modalMode !== 'adjust'} />
-                 </div>
-                 <div className="space-y-1">
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Harga Jual</label>
-                   <input required type="number" disabled={showModal.hasVariants} className={cn("w-full bg-slate-50 px-4 py-3 border-none rounded-2xl text-sm", showModal.hasVariants ? "opacity-50 cursor-not-allowed" : "")} value={showModal.sellPrice} onChange={e => setShowModal({...showModal, sellPrice: Number(e.target.value)})} readOnly={showModal.id !== undefined && modalMode !== 'adjust'} />
-                 </div>
 
-                 <div className="col-span-2 py-2 flex items-center gap-3">
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        const newVal = !showModal.hasVariants;
-                        setShowModal({ ...showModal, hasVariants: newVal });
-                        if (newVal && variants.length === 0) {
-                          setVariants([{ id: 'v1', productId: showModal.id || '', name: 'Varian 1', stock: showModal.stock || 0 }]);
-                        }
-                      }}
-                      className={cn(
-                        "flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all",
-                        showModal.hasVariants ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400"
-                      )}
-                    >
-                      {showModal.hasVariants ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
-                      Memiliki Varian
-                    </button>
-                    <span className="text-[10px] font-bold text-slate-400">Aktifkan jika barang memiliki pilihan warna/ukuran/tipe</span>
-                 </div>
-
-                 {showModal.hasVariants && (
-                   <div className="col-span-2 space-y-4 bg-slate-50 p-6 rounded-3xl border border-slate-100 mb-4">
-                     <div className="flex justify-between items-center">
-                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Daftar Varian</h4>
-                       {(!showModal.id || modalMode === 'adjust') && (
-                         <button type="button" onClick={addVariant} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-[9px] font-black uppercase shadow-sm"><Plus className="w-3 h-3" /> Tambah Varian</button>
-                       )}
+                   {modalMode === 'return' && (
+                     <div className="col-span-1 md:col-span-2 space-y-2">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Alasan Penarikan / Retur</label>
+                       <select required className="w-full bg-slate-50 px-5 py-4 border-2 border-transparent focus:border-slate-200 rounded-[23px] text-xs font-black uppercase outline-none cursor-pointer" value={selectedReturnReason} onChange={e => setSelectedReturnReason(e.target.value)}>
+                         <option value="">-- PILIH ALASAN PENARIKAN --</option>
+                         {returnReasons.map((r: any) => (
+                           <option key={r.id} value={r.label}>{r.label.toUpperCase()}</option>
+                         ))}
+                       </select>
                      </div>
-                     <div className="space-y-2 max-h-60 overflow-y-auto pr-2 no-scrollbar">
-                        {variants.map((v, idx) => (
-                          <div key={v.id} className="flex flex-col gap-2 bg-white p-3 rounded-2xl shadow-sm border border-slate-100">
-                            <div className="flex gap-2 items-end">
-                               <div className="flex-1 space-y-1">
-                                 <label className="text-[8px] font-black text-slate-300 uppercase">Nama Varian</label>
-                                 <input disabled={showModal.id !== undefined && modalMode !== 'adjust'} className={cn("w-full bg-slate-50 px-3 py-2 rounded-lg text-xs", showModal.id && modalMode !== 'adjust' ? "opacity-50" : "")} value={v.name} onChange={e => updateVariant(v.id, 'name', e.target.value)} placeholder="Misal: Merah, Size L" />
-                               </div>
-                               <div className="w-24 space-y-1">
-                                 <label className="text-[8px] font-black text-slate-300 uppercase">Harga Beli</label>
-                                 <input disabled={showModal.id !== undefined && modalMode !== 'adjust'} type="number" className={cn("w-full bg-slate-50 px-3 py-2 rounded-lg text-xs", showModal.id && modalMode !== 'adjust' ? "opacity-50" : "")} value={v.buyPrice || ''} onChange={e => updateVariant(v.id, 'buyPrice', Number(e.target.value))} placeholder={showModal.buyPrice?.toString()} />
-                               </div>
-                               <div className="w-24 space-y-1">
-                                 <label className="text-[8px] font-black text-slate-300 uppercase">Harga Jual</label>
-                                 <input disabled={showModal.id !== undefined && modalMode !== 'adjust'} type="number" className={cn("w-full bg-slate-50 px-3 py-2 rounded-lg text-xs", showModal.id && modalMode !== 'adjust' ? "opacity-50" : "")} value={v.sellPrice || ''} onChange={e => updateVariant(v.id, 'sellPrice', Number(e.target.value))} placeholder={showModal.sellPrice?.toString()} />
-                               </div>
-                               {(!showModal.id || modalMode === 'adjust') && (
-                                 <button type="button" onClick={() => removeVariant(v.id)} className="p-2.5 text-rose-300 hover:text-rose-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                               )}
-                            </div>
-                            
-                            <div className="flex items-center gap-2 mt-1 p-2 bg-slate-50 rounded-xl">
-                              {(!showModal.id || modalMode === 'adjust') ? (
-                                <div className="flex-1 space-y-1">
-                                 <label className="text-[8px] font-black text-slate-400 uppercase">Total Stok Baru</label>
-                                 <input type="number" className="w-full bg-white px-3 py-2 rounded-lg text-xs font-bold border border-slate-100" value={v.stock} onChange={e => updateVariant(v.id, 'stock', Number(e.target.value))} />
-                                </div>
-                              ) : (
-                                <>
-                                  <div className="flex-1">
-                                    <div className="text-[8px] font-black text-slate-400 uppercase">Stok Saat Ini</div>
-                                    <div className="text-sm font-black text-slate-700">{v.stock}</div>
-                                  </div>
-                                  <div className="w-28 space-y-1">
-                                    <label className={cn("text-[8px] font-black uppercase", modalMode === 'add' ? "text-emerald-500" : "text-rose-500")}>
-                                      {modalMode === 'add' ? '+ Tambah' : '- Kurangi'}
-                                    </label>
-                                    <input 
-                                      type="number" 
-                                      min="0"
-                                      max={modalMode === 'reduce' ? v.stock : undefined}
-                                      className={cn("w-full bg-white px-3 py-2 rounded-lg text-xs font-bold border", modalMode === 'add' ? "border-emerald-200" : "border-rose-200")} 
-                                      value={variantAdjustments[v.id] || ''} 
-                                      onChange={e => handleVariantAdjustment(v.id, Number(e.target.value))} 
-                                      placeholder="0"
-                                    />
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                     </div>
-                   </div>
-                 )}
-                 
-                  {showModal.id && (modalMode === 'add' || modalMode === 'reduce' || modalMode === 'return') && (
-                    <div className={cn(
-                      "col-span-2 p-6 rounded-3xl border flex flex-col gap-6",
-                      modalMode === 'add' ? "bg-emerald-50 border-emerald-100" : 
-                      modalMode === 'return' ? "bg-orange-50 border-orange-100" :
-                      "bg-rose-50 border-rose-100"
+                   )}
+                  
+                  {(!showModal.id || modalMode === 'adjust') && (
+                    <>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+                          {modalMode === 'adjust' ? 'Total Stok Baru' : 'Stok Awal'}
+                        </label>
+                        <input required type="number" disabled={showModal.hasVariants} className={cn("w-full bg-slate-50 px-4 py-3.5 border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-slate-200 outline-none transition-all", showModal.hasVariants ? "opacity-40 cursor-not-allowed" : "")} value={showModal.hasVariants ? variants.reduce((acc, v) => acc + (Number(v.stock) || 0), 0) : showModal.stock} onChange={e => setShowModal({...showModal, stock: Number(e.target.value)})} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Limit Stok Menipis</label>
+                        <input required type="number" className="w-full bg-slate-50 px-4 py-3.5 border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-slate-200 outline-none transition-all" value={showModal.minStock} onChange={e => setShowModal({...showModal, minStock: Number(e.target.value)})} />
+                      </div>
+                    </>
+                  )}
+                  
+                  <div className="col-span-1 md:col-span-2 pt-8 pb-10">
+                    <button type="submit" className={cn(
+                      "w-full py-5 text-white font-black rounded-[28px] shadow-2xl uppercase tracking-[0.2em] text-[11px] transition-all hover:scale-[1.01] active:scale-[0.98]",
+                      modalMode === 'add' ? "bg-emerald-500 shadow-emerald-100" : 
+                      modalMode === 'reduce' ? "bg-rose-500 shadow-rose-100" :
+                      modalMode === 'adjust' ? "bg-blue-600 shadow-blue-100" :
+                      "bg-slate-900 shadow-slate-200"
                     )}>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className={cn("text-[10px] font-black uppercase tracking-widest", modalMode === 'add' ? "text-emerald-600" : modalMode === 'return' ? "text-orange-600" : "text-rose-600")}>Stok Saat Ini</div>
-                          <div className={cn("text-2xl font-black", modalMode === 'add' ? "text-emerald-800" : modalMode === 'return' ? "text-orange-800" : "text-rose-800")}>{showModal.stock}</div>
-                        </div>
-                        <div className="text-right">
-                          <label className={cn("text-[10px] font-black uppercase tracking-widest", modalMode === 'add' ? "text-emerald-600" : modalMode === 'return' ? "text-orange-600" : "text-rose-600")}>
-                            {modalMode === 'add' ? 'Tambah Jumlah' : 'Kurangi Jumlah'}
-                          </label>
-                          <input 
-                            autoFocus 
-                            required 
-                            type="number" 
-                            className={cn(
-                              "w-32 bg-white px-4 py-3 border rounded-2xl text-lg font-black text-center mt-1 outline-none focus:ring-2",
-                              modalMode === 'add' ? "border-emerald-200 focus:ring-emerald-500" : 
-                              modalMode === 'return' ? "border-orange-200 focus:ring-orange-500" :
-                              "border-rose-200 focus:ring-rose-500"
-                            )} 
-                            value={qtyInput || ''} 
-                            onChange={e => setQtyInput(Number(e.target.value))} 
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {modalMode === 'add' && (
-                    <div className="col-span-2 space-y-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pilih Supplier</label>
-                        <select required className="w-full bg-slate-50 px-4 py-3 border-none rounded-2xl text-sm outline-none" value={selectedSupplierId} onChange={e => setSelectedSupplierId(e.target.value)}>
-                          <option value="">-- Pilih Supplier --</option>
-                          {suppliers.map((s: any) => (
-                            <option key={s.id} value={s.id}>{s.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="pt-4 border-t border-emerald-100">
-                        <label className="text-[10px] font-black text-emerald-600 uppercase tracking-widest block mb-3 text-center">Sumber Pembelian (Restock)</label>
-                        <div className="flex gap-4">
-                          <button type="button" onClick={() => setPaymentSource('cash')} className={cn("flex-1 py-3 rounded-xl border-2 font-black uppercase text-[10px] tracking-widest transition-all", paymentSource === 'cash' ? "bg-white border-emerald-500 text-emerald-600 shadow-sm" : "bg-emerald-100/50 border-transparent text-emerald-400 opacity-60")}>Cash ({formatCurrency(cashBalance)})</button>
-                          <button type="button" onClick={() => setPaymentSource('bank')} className={cn("flex-1 py-3 rounded-xl border-2 font-black uppercase text-[10px] tracking-widest transition-all", paymentSource === 'bank' ? "bg-white border-emerald-500 text-emerald-600 shadow-sm" : "bg-emerald-100/50 border-transparent text-emerald-400 opacity-60")}>Bank ({formatCurrency(bankBalance)})</button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {modalMode === 'return' && (
-                    <div className="col-span-2 space-y-1">
-                      <label className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Alasan Retur</label>
-                      <select required className="w-full bg-slate-50 px-4 py-3 border-none rounded-2xl text-sm outline-none" value={selectedReturnReason} onChange={e => setSelectedReturnReason(e.target.value)}>
-                        <option value="">-- Pilih Alasan --</option>
-                        {returnReasons.map((r: any) => (
-                          <option key={r.id} value={r.label}>{r.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                 
-                 {(!showModal.id || modalMode === 'adjust') && (
-                   <>
-                     <div className="space-y-1">
-                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                         {modalMode === 'adjust' ? 'Ubah Total Stok' : 'Stok Awal'}
-                       </label>
-                       <input required type="number" disabled={showModal.hasVariants} className={cn("w-full bg-slate-50 px-4 py-3 border-none rounded-2xl text-sm font-bold", showModal.hasVariants ? "opacity-50 cursor-not-allowed" : "")} value={showModal.hasVariants ? variants.reduce((acc, v) => acc + (Number(v.stock) || 0), 0) : showModal.stock} onChange={e => setShowModal({...showModal, stock: Number(e.target.value)})} />
-                     </div>
-                     <div className="space-y-1">
-                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Minimum Stok</label>
-                       <input required type="number" className="w-full bg-slate-50 px-4 py-3 border-none rounded-2xl text-sm" value={showModal.minStock} onChange={e => setShowModal({...showModal, minStock: Number(e.target.value)})} />
-                     </div>
-                   </>
-                 )}
-                 
-                 <div className="col-span-2 pt-6">
-                   <button type="submit" className={cn(
-                     "w-full py-4 text-white font-black rounded-2xl shadow-xl uppercase tracking-widest transition-all hover:scale-[1.02]",
-                     modalMode === 'add' ? "bg-emerald-500 shadow-emerald-100" : 
-                     modalMode === 'reduce' ? "bg-rose-500 shadow-rose-100" :
-                     modalMode === 'adjust' ? "bg-blue-500 shadow-blue-100" :
-                     "bg-slate-900 shadow-slate-100"
-                   )}>
-                     {showModal.id ? (
-                       modalMode === 'add' ? 'Konfirmasi Penambahan' : 
-                       modalMode === 'reduce' ? 'Konfirmasi Pengurangan' :
-                       'Update Data & Stok'
-                     ) : 'Simpan Barang Baru'}
-                   </button>
-                 </div>
-               </form>
+                      {showModal.id ? (
+                        modalMode === 'add' ? 'Eksekusi Restok' : 
+                        modalMode === 'reduce' ? 'Eksekusi Pengurangan' :
+                        'Update Basis Data'
+                      ) : 'Input Barang ke System'}
+                    </button>
+                  </div>
+                </form>
             </motion.div>
           </div>
         )}
