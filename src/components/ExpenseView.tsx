@@ -10,7 +10,10 @@ export default function ExpenseView({
   cashBalance,
   setCashBalance,
   bankBalance,
-  setBankBalance 
+  setBankBalance,
+  products,
+  setProducts,
+  setStockMovements
 }: any) {
   const [showModal, setShowModal] = useState<any>(null);
   const [startDate, setStartDate] = useState('');
@@ -30,6 +33,65 @@ export default function ExpenseView({
     }
     
     setShowModal(null);
+  };
+
+  const deleteExpense = (exp: any) => {
+    // 1. Refund balance
+    if (exp.paymentSource === 'bank') {
+      setBankBalance((prev: any) => prev + exp.amount);
+    } else {
+      setCashBalance((prev: any) => prev + exp.amount);
+    }
+
+    // 2. Reverse stock if restock
+    if (exp.isRestock && exp.productId) {
+      setProducts((prevProducts: any) => {
+        return prevProducts.map((p: any) => {
+          if (p.id !== exp.productId) return p;
+
+          let updatedVariants = p.variants ? [...p.variants] : [];
+          let totalQtyReduced = 0;
+
+          if (exp.items && exp.items.length > 0) {
+            exp.items.forEach((item: any) => {
+              if (item.variantId) {
+                updatedVariants = updatedVariants.map(v => {
+                  if (v.id === item.variantId) {
+                    const reduction = item.qty;
+                    totalQtyReduced += reduction;
+                    return { ...v, stock: Math.max(0, v.stock - reduction) };
+                  }
+                  return v;
+                });
+              } else {
+                totalQtyReduced += item.qty;
+              }
+            });
+          }
+
+          const newTotalStock = Math.max(0, p.stock - totalQtyReduced);
+          return { ...p, stock: newTotalStock, variants: updatedVariants };
+        });
+      });
+
+      // Log movement for reversal
+      const product = products.find((p: any) => p.id === exp.productId);
+      const totalQty = exp.items?.reduce((acc: number, curr: any) => acc + curr.qty, 0) || 0;
+      
+      const newMovement = {
+        id: `MOV-REV-${Date.now()}`,
+        productId: exp.productId,
+        productName: product?.name || 'Item Terhapus',
+        type: 'adjustment',
+        quantity: -totalQty,
+        date: new Date().toISOString(),
+        description: `PEMBATALAN RESTOK: TRANSAKSI BIAYA DIHAPUS`,
+      };
+      setStockMovements((prev: any) => [newMovement, ...prev]);
+    }
+
+    // 3. Remove expense
+    setExpenses(expenses.filter((e: any) => e.id !== exp.id));
   };
 
   const filteredExpenses = expenses.filter((exp: any) => {
@@ -112,7 +174,7 @@ export default function ExpenseView({
                     <div className="text-[8px] font-black text-slate-300 uppercase tracking-widest">{exp.paymentSource || 'CASH'}</div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button onClick={() => { setExpenses(expenses.filter((e:any) => e.id !== exp.id)); setCashBalance((c:any) => c + exp.amount); }} className="p-2 text-slate-200 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all active:scale-90"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => deleteExpense(exp)} className="p-2 text-slate-200 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all active:scale-90"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
               ))}
@@ -140,7 +202,7 @@ export default function ExpenseView({
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight truncate flex-1 pr-4 italic">
                   {exp.description || 'Tanpa catatan tambahan'}
                 </div>
-                <button onClick={() => { setExpenses(expenses.filter((e:any) => e.id !== exp.id)); setCashBalance((c:any) => c + exp.amount); }} className="p-2 text-slate-300 hover:text-rose-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => deleteExpense(exp)} className="p-2 text-slate-300 hover:text-rose-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
               </div>
             </motion.div>
           ))}

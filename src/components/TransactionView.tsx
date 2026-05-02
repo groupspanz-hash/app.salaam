@@ -11,13 +11,10 @@ export default function TransactionView({
   transactions, 
   setTransactions, 
   pulseBalance, 
-  setPulseBalance, 
   transferBalance,
-  setTransferBalance,
-  cashBalance, 
-  setCashBalance,
+  cashBalance,
   bankBalance,
-  setBankBalance,
+  setBalances,
   setStockMovements
 }: any) {
   const [cart, setCart] = useState<TransactionItem[]>([]);
@@ -240,14 +237,19 @@ export default function TransactionView({
       setStockMovements((prevMov: any) => [...newMovements, ...prevMov]);
     }
     
-    setPulseBalance((p:any) => p - totalPulseCost);
-    setTransferBalance((p:any) => p - totalTransferCost);
-    
-    if (paymentMethod === 'Cash') {
-      setCashBalance((p:any) => p + total);
-    } else {
-      setBankBalance((p:any) => p + total);
-    }
+    // Atomic update for all balances
+    setBalances((prev: any) => {
+      const next = { ...prev };
+      next.pulseBalance -= totalPulseCost;
+      next.transferBalance -= totalTransferCost;
+      
+      if (paymentMethod === 'Cash') {
+        next.cashBalance += total;
+      } else {
+        next.bankBalance += total;
+      }
+      return next;
+    });
 
     setTransactions((prev: any) => [newTrx, ...prev]);
     setShowReceipt(newTrx);

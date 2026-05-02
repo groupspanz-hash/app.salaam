@@ -9,9 +9,8 @@ export default function FinanceView({
   expenses, 
   products, 
   cashBalance, 
-  setCashBalance, 
   bankBalance, 
-  setBankBalance,
+  setBalances,
   transfers,
   setTransfers,
   cashBankHistory,
@@ -67,11 +66,10 @@ export default function FinanceView({
       
       setCashBankHistory([newHistory, ...cashBankHistory]);
       
-      if (adjustData.type === 'cash') {
-         setCashBalance(adjustData.amount);
-      } else {
-         setBankBalance(adjustData.amount);
-      }
+      setBalances((prev: any) => ({
+        ...prev,
+        [adjustData.type === 'cash' ? 'cashBalance' : 'bankBalance']: adjustData.amount
+      }));
     }
     
     setShowAdjustModal(false);
@@ -81,15 +79,20 @@ export default function FinanceView({
     e.preventDefault();
     if (transferData.amount <= 0) return;
     
-    if (transferData.from === 'cash') {
-      if (cashBalance < transferData.amount) return alert('Saldo Cash tidak cukup!');
-      setCashBalance((p: any) => p - transferData.amount);
-      setBankBalance((p: any) => p + transferData.amount);
-    } else {
-      if (bankBalance < transferData.amount) return alert('Saldo Bank tidak cukup!');
-      setBankBalance((p: any) => p - transferData.amount);
-      setCashBalance((p: any) => p + transferData.amount);
-    }
+    if (transferData.from === 'cash' && cashBalance < transferData.amount) return alert('Saldo Cash tidak cukup!');
+    if (transferData.from === 'bank' && bankBalance < transferData.amount) return alert('Saldo Bank tidak cukup!');
+
+    setBalances((prev: any) => {
+      const next = { ...prev };
+      if (transferData.from === 'cash') {
+        next.cashBalance -= transferData.amount;
+        next.bankBalance += transferData.amount;
+      } else {
+        next.bankBalance -= transferData.amount;
+        next.cashBalance += transferData.amount;
+      }
+      return next;
+    });
 
     const newTransfer = {
       id: `TRF-${Date.now()}`,

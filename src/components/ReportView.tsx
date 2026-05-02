@@ -1,16 +1,125 @@
 import React, { useState } from 'react';
-import { FileText, Download, Printer, Filter, X, Package, CreditCard, User, Calendar } from 'lucide-react';
+import { FileText, Download, Printer, Filter, X, Package, CreditCard, User, Calendar, Trash2 } from 'lucide-react';
 import { formatCurrency, cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-export default function ReportView({ transactions, expenses, products, digitalTopups, stockMovements, transfers, cashBankHistory }: any) {
+export default function ReportView({ 
+  transactions, 
+  setTransactions,
+  expenses, 
+  products, 
+  setProducts,
+  digitalTopups, 
+  stockMovements, 
+  setStockMovements,
+  transfers, 
+  cashBankHistory,
+  setBalances
+}: any) {
   const [reportType, setReportType] = useState('sales');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [stockSort, setStockSort] = useState<'name' | 'stock_asc'>('name');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<any>(null);
+
+  const deleteTransaction = (trx: any) => {
+    setIsDeleting(true);
+
+    // Calculate restoration amounts
+    const totalPulseReturn = trx.items
+      .filter((i: any) => i.isPulse && i.digitalType === 'pulsa')
+      .reduce((acc: number, curr: any) => acc + (parseInt(curr.productId.split('-')[1]) * curr.quantity), 0);
+    
+    const totalTransferReturn = trx.items
+      .filter((i: any) => i.isPulse && i.digitalType === 'transfer')
+      .reduce((acc: number, curr: any) => acc + (parseInt(curr.productId.split('-')[1]) * curr.quantity), 0);
+
+    // 1. Update Balances Atomically
+    setBalances((prev: any) => {
+      const next = { ...prev };
+      
+      // Refund payment by reducing from the balance it was added to
+      // Wait, if it was a sale, we added money to cash/bank. So deletion should SUBTRACT it.
+      const method = trx.paymentMethod?.toUpperCase();
+      if (method === 'BANK' || method === 'TRANSFER' || method === 'QRIS') {
+        next.bankBalance -= trx.total;
+      } else {
+        next.cashBalance -= trx.total;
+      }
+
+      // Restore Digital Assets (if they were reduced during sale)
+      next.pulseBalance += totalPulseReturn;
+      next.transferBalance += totalTransferReturn;
+
+      return next;
+    });
+
+    // 2. Restore Stock
+    setProducts((prevProducts: any) => {
+      let currentProducts = JSON.parse(JSON.stringify(prevProducts)); // Deep copy to be safe
+      
+      trx.items.forEach((item: any) => {
+        if (item.isPulse) return;
+
+        currentProducts = currentProducts.map((p: any) => {
+          if (String(p.id) !== String(item.productId)) return p;
+
+          let updatedVariants = p.variants ? [...p.variants] : [];
+          let totalQtyAdded = 0;
+
+          if (item.variantId) {
+            updatedVariants = updatedVariants.map((v: any) => {
+              if (String(v.id) === String(item.variantId)) {
+                totalQtyAdded = item.quantity;
+                return { ...v, stock: (Number(v.stock) || 0) + item.quantity };
+              }
+              return v;
+            });
+          } else {
+            totalQtyAdded = item.quantity;
+          }
+
+          return { 
+            ...p, 
+            stock: (Number(p.stock) || 0) + totalQtyAdded,
+            variants: updatedVariants
+          };
+        });
+      });
+
+      return currentProducts;
+    });
+
+    // 3. Log Stock Movement Reversals
+    const now = Date.now();
+    trx.items.forEach((item: any, idx: number) => {
+      if (item.isPulse) return;
+      
+      const newMovement = {
+        id: `MOV-REV-SALE-${now}-${idx}`,
+        productId: item.productId,
+        productName: item.name,
+        variantId: item.variantId,
+        variantName: item.variantName,
+        type: 'adjustment',
+        quantity: item.quantity,
+        date: new Date().toISOString(),
+        description: `BATAL JUAL: TRX ${trx.id} DIHAPUS`,
+      };
+      setStockMovements((prev: any) => [newMovement, ...prev]);
+    });
+
+    // 4. Remove Transaction
+    setTransactions((prev: any) => prev.filter((t: any) => t.id !== trx.id));
+    
+    setIsDeleting(false);
+    setShowDeleteConfirm(null);
+    setSelectedTransaction(null);
+  };
 
   const generatePDF = (shouldPrint = false) => {
     const doc = new jsPDF();
@@ -808,11 +917,56 @@ export default function ReportView({ transactions, expenses, products, digitalTo
                    </div>
                 </div>
 
+                 <div className="flex gap-3">
+                   <button 
+                     onClick={() => setShowDeleteConfirm(selectedTransaction)} 
+                     disabled={isDeleting}
+                     className="flex-1 py-4 bg-rose-50 text-rose-500 font-black rounded-2xl uppercase tracking-[0.2em] text-[10px] hover:bg-rose-100 active:scale-95 transition-all disabled:opacity-50"
+                   >
+                     Hapus Transaksi
+                   </button>
+                   <button 
+                     onClick={() => setSelectedTransaction(null)} 
+                     className="flex-1 py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl shadow-slate-100 uppercase tracking-[0.2em] text-[10px] hover:scale-[1.02] active:scale-95 transition-all"
+                   >
+                     Tutup Detail
+                   </button>
+                 </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+       <AnimatePresence>
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[60] p-6">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }} 
+              animate={{ scale: 1, opacity: 1 }} 
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-[40px] w-full max-w-sm p-8 text-center"
+            >
+              <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Trash2 className="w-8 h-8 text-rose-500" />
+              </div>
+              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-2">Konfirmasi Hapus</h3>
+              <p className="text-sm text-slate-500 font-bold mb-8 leading-relaxed">
+                Yakin ingin menghapus transaksi <span className="text-slate-900 font-black">{showDeleteConfirm.id}</span>? 
+                <br/>Stok akan dikembalikan dan saldo akan dikurangi.
+              </p>
+              <div className="grid grid-cols-2 gap-3">
                 <button 
-                  onClick={() => setSelectedTransaction(null)} 
-                  className="w-full py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl shadow-slate-100 uppercase tracking-[0.2em] text-[10px] hover:scale-[1.02] active:scale-95 transition-all"
+                  onClick={() => setShowDeleteConfirm(null)}
+                  className="py-4 bg-slate-100 text-slate-400 font-black rounded-2xl uppercase tracking-widest text-[10px] hover:bg-slate-200"
                 >
-                  Tutup Detail
+                  Batal
+                </button>
+                <button 
+                  onClick={() => deleteTransaction(showDeleteConfirm)}
+                  disabled={isDeleting}
+                  className="py-4 bg-rose-500 text-white font-black rounded-2xl uppercase tracking-widest text-[10px] shadow-lg shadow-rose-100 hover:bg-rose-600 disabled:opacity-50"
+                >
+                  {isDeleting ? 'Menghapus...' : 'Ya, Hapus'}
                 </button>
               </div>
             </motion.div>

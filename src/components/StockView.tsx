@@ -137,15 +137,30 @@ export default function StockView({
              movementType = movementQty > 0 ? 'in' : movementQty < 0 ? 'out' : 'adjustment';
              
              if (modalMode === 'add') {
+               const restockItems: any[] = [];
+               const addedDetails: string[] = [];
+               
                const actualTotalCost = updatedVariants.reduce((acc, v) => {
                  const initial = v.stock - (variantAdjustments[v.id] || 0);
                  const added = (v.stock - initial);
+                 if (added > 0) {
+                    restockItems.push({ variantId: v.id, qty: added });
+                    addedDetails.push(`${v.name} (${added} Unit)`);
+                 }
                  return acc + (added > 0 ? (added * (v.buyPrice || showModal.buyPrice || 0)) : 0);
                }, 0);
                
                if (movementQty > 0) {
                  logMovement(showModal.id, showModal.name!, 'in', movementQty, `Restock varian dari supplier`, selectedSupplierId);
-                 if (actualTotalCost > 0) processExpense(showModal.name!, actualTotalCost);
+                 if (actualTotalCost > 0) {
+                   const detailStr = addedDetails.join(', ');
+                   processExpense(
+                     showModal.name!, 
+                     actualTotalCost, 
+                     `RESTOK VARIAN: ${detailStr}`, 
+                     { productId: showModal.id, isRestock: true, items: restockItems }
+                   );
+                 }
                }
              } else if (modalMode === 'return') {
                if (movementQty < 0) {
@@ -169,7 +184,12 @@ export default function StockView({
                expenseAmount = qtyInput * (showModal.buyPrice || 0);
                movementType = 'in';
                logMovement(showModal.id, showModal.name!, movementType, movementQty, `Restock penambahan dari supplier`, selectedSupplierId);
-               processExpense(showModal.name!, expenseAmount);
+               processExpense(
+                 showModal.name!, 
+                 expenseAmount, 
+                 `RESTOK: ${movementQty} UNIT`,
+                 { productId: showModal.id, isRestock: true, items: [{ qty: movementQty }] }
+               );
             } else if (modalMode === 'return') {
                movementQty = -qtyInput;
                finalStock = Math.max(0, existingProduct.stock - qtyInput);
@@ -186,6 +206,21 @@ export default function StockView({
        setProducts((prev: any) => prev.map((p:any) => p.id === showModal.id ? { ...productData, stock: finalStock } : p));
     } else {
        movementQty = hasVariants ? finalStock : Number(showModal.stock || 0);
+       
+       let restockDetail = '';
+       let restockMetadataItems: any[] = [];
+       
+       if (hasVariants) {
+         const details = updatedVariants.filter(v => v.stock > 0).map(v => {
+           restockMetadataItems.push({ variantId: v.id, qty: v.stock });
+           return `${v.name} (${v.stock} Unit)`;
+         });
+         restockDetail = `STOK AWAL VARIAN: ${details.join(', ')}`;
+       } else {
+         restockDetail = `STOK AWAL: ${movementQty} UNIT`;
+         restockMetadataItems = [{ qty: movementQty }];
+       }
+
        expenseAmount = hasVariants && updatedVariants.length > 0 
          ? updatedVariants.reduce((acc, v) => acc + (v.stock * (v.buyPrice || showModal.buyPrice || 0)), 0)
          : movementQty * (showModal.buyPrice || 0);
@@ -196,7 +231,14 @@ export default function StockView({
        
        setProducts((prev: any) => [...prev, { ...productData, id: newId, stock: finalStock, variants: finalVariants }]);
        logMovement(newId, showModal.name!, 'in', movementQty, `Stok awal barang baru`);
-       if (expenseAmount > 0) processExpense(showModal.name!, expenseAmount);
+       if (expenseAmount > 0) {
+         processExpense(
+           showModal.name!, 
+           expenseAmount, 
+           restockDetail, 
+           { productId: newId, isRestock: true, items: restockMetadataItems }
+         );
+       }
     }
 
     setShowModal(null);
@@ -223,7 +265,7 @@ export default function StockView({
     setStockMovements((prev: any) => [newMovement, ...prev]);
   };
 
-  const processExpense = (name: string, amount: number) => {
+  const processExpense = (name: string, amount: number, customDesc?: string, metadata?: any) => {
     if (amount > 0) {
       const newExpense = {
         id: `EXP-STOCK-${Date.now()}`,
@@ -231,7 +273,9 @@ export default function StockView({
         name: `Restok: ${name}`,
         category: 'Belanja barang',
         amount: amount,
-        description: `Otomatis dari penambahan stok barang (${paymentSource})`
+        description: customDesc || `Otomatis dari penambahan stok barang (${paymentSource})`,
+        paymentSource,
+        ...metadata
       };
       setExpenses((prev: any) => [newExpense, ...prev]);
       if (paymentSource === 'cash') {
@@ -607,7 +651,7 @@ export default function StockView({
                     </div>
                   )}
                   
-                    {showModal.id && (modalMode === 'add' || modalMode === 'reduce' || modalMode === 'return') && (
+                    {showModal.id && (modalMode === 'add' || modalMode === 'reduce' || modalMode === 'return') && !showModal.hasVariants && (
                       <div className={cn(
                         "col-span-1 md:col-span-2 p-4 sm:p-6 rounded-[32px] border-2 border-dashed flex flex-col gap-6",
                         modalMode === 'add' ? "bg-emerald-50/50 border-emerald-200" : 

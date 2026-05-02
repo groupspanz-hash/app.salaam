@@ -144,13 +144,10 @@ export default function App() {
           transactions={transactions} 
           setTransactions={setTransactions} 
           pulseBalance={pulseBalance} 
-          setPulseBalance={setPulseBalance}
           transferBalance={transferBalance}
-          setTransferBalance={setTransferBalance}
           cashBalance={cashBalance}
-          setCashBalance={setCashBalance}
           bankBalance={bankBalance}
-          setBankBalance={setBankBalance}
+          setBalances={setBalances}
           setStockMovements={setStockMovements}
         />;
       case 'stock':
@@ -172,15 +169,12 @@ export default function App() {
       case 'pulse':
         return <PulseView 
           pulseBalance={pulseBalance} 
-          setPulseBalance={setPulseBalance} 
           transferBalance={transferBalance}
-          setTransferBalance={setTransferBalance}
+          setBalances={setBalances}
           digitalTopups={digitalTopups} 
           setDigitalTopups={setDigitalTopups} 
           cashBalance={cashBalance}
-          setCashBalance={setCashBalance}
           bankBalance={bankBalance}
-          setBankBalance={setBankBalance}
           setTransactions={setTransactions}
           userRole={userRole}
         />;
@@ -192,6 +186,9 @@ export default function App() {
           setCashBalance={setCashBalance}
           bankBalance={bankBalance}
           setBankBalance={setBankBalance}
+          setProducts={setProducts}
+          products={products}
+          setStockMovements={setStockMovements}
         />;
       case 'finance':
         return <FinanceView 
@@ -199,9 +196,8 @@ export default function App() {
           expenses={expenses} 
           products={products} 
           cashBalance={cashBalance}
-          setCashBalance={setCashBalance}
           bankBalance={bankBalance}
-          setBankBalance={setBankBalance}
+          setBalances={setBalances}
           transfers={transfers}
           setTransfers={setTransfers}
           cashBankHistory={cashBankHistory}
@@ -211,12 +207,16 @@ export default function App() {
       case 'reports':
         return <ReportView 
           transactions={transactions} 
+          setTransactions={setTransactions}
           expenses={expenses} 
           products={products} 
+          setProducts={setProducts}
           digitalTopups={digitalTopups} 
           stockMovements={stockMovements}
+          setStockMovements={setStockMovements}
           transfers={transfers}
           cashBankHistory={cashBankHistory}
+          setBalances={setBalances}
         />;
       default:
         return <DashboardView 

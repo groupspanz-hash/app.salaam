@@ -5,15 +5,12 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export default function PulseView({ 
   pulseBalance, 
-  setPulseBalance, 
   transferBalance, 
-  setTransferBalance, 
+  setBalances,
   digitalTopups, 
   setDigitalTopups, 
   cashBalance,
-  setCashBalance,
   bankBalance,
-  setBankBalance,
   setTransactions,
   userRole
 }: any) {
@@ -46,11 +43,10 @@ export default function PulseView({
       };
       setDigitalTopups((prev: any) => [newTopup, ...prev]);
       
-      if (adjustData.type === 'pulsa') {
-         setPulseBalance(adjustData.amount);
-      } else {
-         setTransferBalance(adjustData.amount);
-      }
+      setBalances((prev: any) => ({
+        ...prev,
+        [adjustData.type === 'pulsa' ? 'pulseBalance' : 'transferBalance']: adjustData.amount
+      }));
     }
     
     setShowAdjustModal(false);
@@ -77,18 +73,22 @@ export default function PulseView({
 
     setDigitalTopups((prev: any) => [newTopup, ...prev]);
     
-    if (topupType === 'pulsa') {
-      setPulseBalance((p: any) => p + val);
-    } else {
-      setTransferBalance((p: any) => p + val);
-    }
+    setBalances((prev: any) => {
+      const next = { ...prev };
+      if (topupType === 'pulsa') {
+        next.pulseBalance += val;
+      } else {
+        next.transferBalance += val;
+      }
 
-    if (paymentSource === 'cash') {
-      setCashBalance((c: any) => c - val);
-    } else {
-      setBankBalance((b: any) => b - val);
-    }
-    
+      if (paymentSource === 'cash') {
+        next.cashBalance -= val;
+      } else {
+        next.bankBalance -= val;
+      }
+      return next;
+    });
+
     setAmount(''); 
     setProvider('');
   };
