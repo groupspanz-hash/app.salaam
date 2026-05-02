@@ -34,6 +34,7 @@ type View = 'dashboard' | 'transactions' | 'stock' | 'pulse' | 'expenses' | 'fin
 export default function App() {
   const [activeView, setActiveView] = useState<View>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState<'owner' | 'admin'>(() => {
     const saved = localStorage.getItem('userRole');
     return (saved as 'owner' | 'admin') || 'admin';
@@ -244,13 +245,14 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-50">
+    <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden bg-slate-50">
+      {/* Desktop Sidebar */}
       <aside className={cn(
-        "bg-slate-900 text-white flex flex-col transition-all duration-300 ease-in-out shrink-0 relative z-20",
+        "hidden md:flex flex-col bg-slate-900 text-white transition-all duration-300 ease-in-out shrink-0 relative z-20",
         isSidebarOpen ? "w-64" : "w-20"
       )}>
         <div className="p-6 flex items-center gap-3 overflow-hidden whitespace-nowrap">
-          <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
             <DollarSign className="w-6 h-6 text-white" />
           </div>
           {isSidebarOpen && (
@@ -269,7 +271,7 @@ export default function App() {
                 className={cn(
                   "w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 cursor-pointer text-left",
                   isActive 
-                    ? "bg-emerald-500 text-white shadow-lg shadow-emerald-900/20" 
+                    ? "bg-emerald-500 text-white shadow-lg shadow-emerald-900/40 translate-x-1" 
                     : "text-slate-400 hover:bg-slate-800 hover:text-white"
                 )}
               >
@@ -306,53 +308,89 @@ export default function App() {
           <div className="p-4 bg-slate-800 m-4 rounded-2xl shadow-inner">
             <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Saldo Toko (Cash)</div>
             <div className="text-lg font-bold text-emerald-400">{formatCurrency(cashBalance)}</div>
-            <div className="text-[10px] text-slate-400 mt-2 uppercase">Saldo Pulsa</div>
-            <div className="text-sm font-semibold text-blue-400">{formatCurrency(pulseBalance)}</div>
-            <div className="text-[10px] text-slate-400 mt-2 uppercase">Saldo Transfer</div>
-            <div className="text-sm font-semibold text-purple-400">{formatCurrency(transferBalance)}</div>
+            <div className="text-[10px] text-slate-500 mt-2 uppercase font-bold tracking-tight">E-Asset</div>
+            <div className="flex gap-2 mt-1">
+               <div className="flex-1 text-[10px] bg-blue-500/10 text-blue-400 p-1 rounded text-center border border-blue-500/20">{formatCurrency(pulseBalance)}</div>
+               <div className="flex-1 text-[10px] bg-purple-500/10 text-purple-400 p-1 rounded text-center border border-purple-500/20">{formatCurrency(transferBalance)}</div>
+            </div>
           </div>
         )}
         
         <button 
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="absolute -right-3 top-20 bg-emerald-500 rounded-full p-1 text-white shadow-lg"
+          className="absolute -right-3 top-20 bg-emerald-500 rounded-full p-1 text-white shadow-lg hover:scale-110 transition-transform hidden lg:block"
         >
-          {isSidebarOpen ? <X className="w- 4 h-4" /> : <Menu className="w-4 h-4" />}
+          {isSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
         </button>
       </aside>
 
-      <main className="flex-1 flex flex-col h-full overflow-hidden">
-        <header className="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between shrink-0 shadow-sm relative z-10">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-slate-800 capitalize">{activeView.replace('-', ' ')}</h1>
+      {/* Mobile Bottom Nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex items-center justify-around h-16 px-2 safe-area-bottom shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
+        {sidebarItems.slice(0, 5).map((item) => {
+          const Icon = item.icon;
+          const isActive = activeView === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveView(item.id as View)}
+              className={cn(
+                "flex flex-col items-center justify-center gap-1 flex-1 py-1 px-1 transition-all",
+                isActive ? "text-emerald-600" : "text-slate-400"
+              )}
+            >
+              <div className={cn(
+                "p-1 rounded-lg transition-all",
+                isActive ? "bg-emerald-50" : ""
+              )}>
+                <Icon className={cn("w-5 h-5", isActive ? "stroke-[2.5]" : "stroke-[2]")} />
+              </div>
+              <span className="text-[9px] font-bold uppercase tracking-tight">{item.label}</span>
+              {isActive && <motion.div layoutId="nav-indicator" className="w-1 h-1 bg-emerald-600 rounded-full mt-0.5" />}
+            </button>
+          );
+        })}
+      </nav>
+
+      <main className="flex-1 flex flex-col h-full overflow-hidden pb-16 md:pb-0">
+        <header className="h-16 bg-white border-b border-slate-100 px-4 md:px-8 flex items-center justify-between shrink-0 box-border sticky top-0 z-10">
+          <div className="flex items-center gap-3">
+             <div className="md:hidden w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20">
+               <DollarSign className="w-4 h-4 text-white" />
+             </div>
+             <h1 className="text-base md:text-xl font-black text-slate-800 uppercase tracking-tight">{activeView.replace('-', ' ')}</h1>
           </div>
           
-          <div className="flex items-center gap-6 text-slate-600">
+          <div className="flex items-center gap-3 md:gap-6 text-slate-600">
             <div className="hidden sm:flex flex-col text-right text-xs">
-              <div className="text-slate-400">Hari ini</div>
-              <div className="font-bold">{new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+              <div className="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Hari ini</div>
+              <div className="font-bold text-slate-800">{new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</div>
             </div>
             
-            <div className="flex items-center gap-3 border-l border-slate-200 pl-6">
-              <div className="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center font-bold text-emerald-600 border border-emerald-100 uppercase">
-                {userRole === 'owner' ? 'OW' : 'AD'}
+            <div 
+              onClick={() => setIsProfileMenuOpen(true)}
+              className="flex items-center gap-2 md:gap-3 md:border-l border-slate-100 md:pl-6 leading-none cursor-pointer active:scale-95 transition-all"
+            >
+              <div className="text-right hidden xs:block">
+                <div className="text-sm font-black text-slate-800 uppercase tracking-tighter truncate max-w-[80px]">{userRole === 'owner' ? 'Owner' : 'Kasir'}</div>
               </div>
-              <div className="hidden md:block">
-                <div className="text-sm font-bold text-slate-800">{userRole === 'owner' ? 'Owner Akun' : 'Admin Toko'}</div>
-                <div className="text-[10px] uppercase font-bold text-slate-400">{userRole}</div>
+              <div className={cn(
+                "w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center font-black text-[10px] md:text-xs border transition-colors",
+                userRole === 'owner' ? "bg-emerald-50 border-emerald-200 text-emerald-600" : "bg-blue-50 border-blue-200 text-blue-600"
+              )}>
+                {userRole === 'owner' ? 'OW' : 'AD'}
               </div>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 p-4 lg:p-8 overflow-y-auto no-scrollbar">
+        <div className="flex-1 p-3 xs:p-4 md:p-8 overflow-y-auto no-scrollbar scroll-smooth">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeView}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
               className="h-full"
             >
               {renderView()}
@@ -362,6 +400,127 @@ export default function App() {
       </main>
 
       <AnimatePresence>
+        {isProfileMenuOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsProfileMenuOpen(false)}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[100] md:hidden"
+            />
+            <motion.div 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 right-0 w-[85%] max-w-sm bg-white z-[110] shadow-2xl flex flex-col md:hidden"
+            >
+              <div className="p-6 bg-slate-900 text-white flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-10 h-10 rounded-2xl flex items-center justify-center font-black text-xs border",
+                    userRole === 'owner' ? "bg-emerald-500 border-emerald-400" : "bg-blue-500 border-blue-400"
+                  )}>
+                    {userRole === 'owner' ? 'OW' : 'AD'}
+                  </div>
+                  <div>
+                    <div className="font-black text-sm uppercase tracking-tight">{userRole === 'owner' ? 'Owner Account' : 'Admin Terminal'}</div>
+                    <div className="text-[9px] text-white/50 font-black uppercase tracking-widest">{user?.email}</div>
+                  </div>
+                </div>
+                <button onClick={() => setIsProfileMenuOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar">
+                {/* Financial Summary */}
+                <div className="space-y-4">
+                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 px-1">Ringkasan Saldo</div>
+                  <div className="bg-slate-50 p-5 rounded-[24px] border border-slate-100">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Saldo Tunai (Kas)</div>
+                      <Wallet className="w-4 h-4 text-emerald-500" />
+                    </div>
+                    <div className="text-2xl font-black text-slate-800 tabular-nums">{formatCurrency(cashBalance)}</div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
+                      <div className="text-[8px] font-black text-blue-400 uppercase tracking-widest mb-1">Asset Pulsa</div>
+                      <div className="text-xs font-black text-blue-600 tabular-nums">{formatCurrency(pulseBalance)}</div>
+                    </div>
+                    <div className="bg-purple-50/50 p-4 rounded-2xl border border-purple-100">
+                      <div className="text-[8px] font-black text-purple-400 uppercase tracking-widest mb-1">Asset Digital</div>
+                      <div className="text-xs font-black text-purple-600 tabular-nums">{formatCurrency(transferBalance)}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Menu */}
+                <div className="space-y-2">
+                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-1">Menu Navigasi</div>
+                  <div className="grid grid-cols-1 gap-2">
+                    {sidebarItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = activeView === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setActiveView(item.id as View);
+                            setIsProfileMenuOpen(false);
+                          }}
+                          className={cn(
+                            "flex items-center gap-4 p-4 rounded-2xl transition-all border",
+                            isActive 
+                              ? "bg-slate-800 border-slate-800 text-white shadow-xl shadow-slate-200" 
+                              : "bg-white border-transparent text-slate-500 active:bg-slate-50"
+                          )}
+                        >
+                          <Icon className={cn("w-5 h-5", isActive ? "text-emerald-400" : "text-slate-300")} />
+                          <span className="text-[11px] font-black uppercase tracking-widest">{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Role Switcher */}
+                <div className="space-y-4 pt-4 border-t border-slate-100">
+                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 px-1 text-center">Ganti Mode Akses</div>
+                  <div className="flex bg-slate-100 p-1.5 rounded-2xl gap-1.5">
+                    <button 
+                      onClick={() => handleRoleSwitch('owner')}
+                      className={cn(
+                        "flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all",
+                        userRole === 'owner' ? "bg-white text-slate-900 shadow-sm border border-slate-200" : "text-slate-400"
+                      )}
+                    >Owner</button>
+                    <button 
+                      onClick={() => handleRoleSwitch('admin')}
+                      className={cn(
+                        "flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all",
+                        userRole === 'admin' ? "bg-white text-slate-900 shadow-sm border border-slate-200" : "text-slate-400"
+                      )}
+                    >Kasir</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 bg-slate-50 border-t border-slate-100">
+                <button 
+                  onClick={() => auth.signOut()}
+                  className="w-full py-4 bg-white border border-slate-200 text-rose-500 font-black rounded-2xl uppercase text-[10px] tracking-[0.2em] active:scale-95 transition-all shadow-sm"
+                >
+                  Keluar Sistem
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+
         {showPassModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-6">
             <motion.div 

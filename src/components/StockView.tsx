@@ -249,31 +249,56 @@ export default function StockView({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      {/* Search and Action Bar */}
+      <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
-           <div className="relative w-full sm:w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-            <input type="text" placeholder="Cari kode atau nama..." className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+          <div className="relative flex-1 group">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+            <input 
+              type="text" 
+              placeholder="CARI BARANG / KODE..." 
+              className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" 
+              value={searchTerm} 
+              onChange={e => setSearchTerm(e.target.value)} 
+            />
           </div>
-          <button onClick={() => setShowSupplierManager(true)} className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors" title="Kelola Supplier">
-            <Plus className="w-5 h-5" />
-          </button>
-          <button onClick={() => setShowReasonManager(true)} className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors" title="Kelola Alasan Retur">
-            <RefreshCcw className="w-5 h-5" />
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setShowSupplierManager(true)} 
+              className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:bg-slate-50 hover:border-emerald-200 hover:text-emerald-600 transition-all shadow-sm active:scale-95" 
+              title="Kelola Supplier"
+            >
+              <Package className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={() => setShowReasonManager(true)} 
+              className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:bg-slate-50 hover:border-orange-200 hover:text-orange-600 transition-all shadow-sm active:scale-95" 
+              title="Kelola Alasan Retur"
+            >
+              <RefreshCcw className="w-5 h-5" />
+            </button>
+          </div>
         </div>
-        <button onClick={() => {
-          setShowModal({ name: '', code: '', category: '', buyPrice: 0, sellPrice: 0, stock: 0, minStock: 5 });
-          setModalMode('new');
-          setQtyInput(0);
-        }} className="w-full sm:w-auto bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-xl shadow-slate-100 uppercase text-xs tracking-widest transition-transform hover:scale-105 active:scale-95"><Plus className="w-4 h-4" /> Barang Baru</button>
+        
+        <button 
+          onClick={() => {
+            setShowModal({ name: '', code: '', category: '', buyPrice: 0, sellPrice: 0, stock: 0, minStock: 5 });
+            setModalMode('new');
+            setQtyInput(0);
+          }} 
+          className="w-full bg-slate-900 text-white px-6 py-4 rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl shadow-slate-200 uppercase text-[10px] tracking-[0.2em] transition-all hover:bg-slate-800 active:scale-95 mb-1"
+        >
+          <Plus className="w-4 h-4" /> 
+          Input Barang Baru
+        </button>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b">
+      {/* Main List Container */}
+      <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-slate-50/50 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">
               <tr>
                 <th className="px-6 py-4 cursor-pointer hover:bg-slate-100 group transition-colors" onClick={() => requestSort('name')}>
                   <div className="flex items-center">Nama Barang {getSortIcon('name')}</div>
@@ -287,102 +312,62 @@ export default function StockView({
                 <th className="px-6 py-4 text-center cursor-pointer hover:bg-slate-100 group transition-colors" onClick={() => requestSort('stock')}>
                   <div className="flex items-center justify-center">Stok {getSortIcon('stock')}</div>
                 </th>
-                <th className="px-6 py-4 text-right">Aksi Stok / Produk</th>
+                <th className="px-6 py-4 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-slate-50 font-bold">
               {sortedProducts.map((p:any) => (
-                <tr key={p.id} className="hover:bg-slate-50 transition-colors group">
-                  <td className="px-6 py-4 pb-2 align-top">
-                    <div className="flex items-start gap-3">
-                      <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", p.stock <= p.minStock ? "bg-rose-100 text-rose-500" : "bg-slate-100 text-slate-300")}>
-                        <Package className="w-5 h-5" />
+                <tr key={p.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="px-6 py-4 align-top">
+                    <div className="flex items-start gap-4">
+                      <div className={cn(
+                        "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border shadow-sm",
+                        p.stock <= p.minStock ? "bg-rose-50 border-rose-100 text-rose-500" : "bg-slate-50 border-slate-100 text-slate-300"
+                      )}>
+                        <Package className="w-6 h-6" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-sm font-bold text-slate-800 truncate">{p.name}</div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <div className="text-[10px] font-black text-slate-400 uppercase">{p.code}</div>
-                          {p.hasVariants && (
-                            <span className="bg-emerald-100 text-emerald-600 text-[8px] font-black px-1.5 py-0.5 rounded uppercase leading-none">Varian</span>
-                          )}
+                        <div className="text-[13px] font-black text-slate-800 uppercase tabular-nums truncate leading-none mb-1.5">{p.name}</div>
+                        <div className="flex items-center gap-2">
+                           <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none translate-y-[1px]">{p.code}</div>
+                           {p.hasVariants && (
+                             <span className="bg-emerald-500 text-white text-[7px] font-black px-1.5 py-0.5 rounded-full uppercase leading-none scale-90">VARIAN</span>
+                           )}
                         </div>
                         {p.hasVariants && p.variants && p.variants.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
+                          <div className="flex flex-wrap gap-1 mt-3">
                             {p.variants.map((v: any) => (
-                              <span key={v.id} className={cn(
-                                "text-[9px] font-bold px-2 py-0.5 rounded-lg border",
-                                v.stock <= 0 ? "bg-rose-50 text-rose-400 border-rose-100" : "bg-slate-50 text-slate-400 border-slate-100"
+                              <div key={v.id} className={cn(
+                                "text-[8px] font-black px-2 py-1 rounded-lg border flex items-center gap-1.5 uppercase tracking-tighter",
+                                v.stock <= 0 ? "bg-rose-50 text-rose-400 border-rose-100" : "bg-slate-50 text-slate-500 border-slate-200"
                               )}>
-                                {v.name}: <span className={v.stock <= 2 ? "text-rose-500" : "text-slate-600"}>{v.stock}</span>
-                              </span>
+                                <span className="opacity-50">{v.name}</span>
+                                <span className={cn("px-1.5 py-0.5 rounded-md", v.stock <= 2 ? "bg-rose-500 text-white shadow-sm" : "bg-slate-200 text-slate-700")}>{v.stock}</span>
+                              </div>
                             ))}
                           </div>
                         )}
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 uppercase font-bold text-slate-400 text-[10px] tracking-widest">{p.category}</td>
-                  <td className="px-6 py-4 text-right font-black text-emerald-600 text-sm">{formatCurrency(p.sellPrice)}</td>
-                  <td className="px-6 py-4 text-center font-black">
-                    <div className={cn("inline-block px-3 py-1 rounded-full text-xs", p.stock <= p.minStock ? "bg-rose-100 text-rose-600" : "bg-slate-100 text-slate-600")}>{p.stock}</div>
+                  <td className="px-6 py-4">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-1 rounded-lg">{p.category}</span>
                   </td>
-                  <td className="px-6 py-4 text-right whitespace-nowrap">
-                    <div className="flex justify-end gap-2 transition-opacity">
-                      <button 
-                        onClick={() => {
-                          setShowModal(p);
-                          setVariants(p.variants || []);
-                          setModalMode('add');
-                          setSelectedSupplierId('');
-                        }} 
-                        className="px-2.5 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-lg transition-all shadow-sm flex items-center gap-1 font-black uppercase text-[8px]" 
-                        title="Tambah Stok"
-                      >
-                        <Plus className="w-3 h-3" />
-                        <span>Restok</span>
-                      </button>
-
-                      <button 
-                        onClick={() => {
-                          setShowModal(p);
-                          setVariants(p.variants || []);
-                          setModalMode('return');
-                          setSelectedReturnReason('');
-                        }} 
-                        className="px-2.5 py-1.5 bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white rounded-lg transition-all shadow-sm flex items-center gap-1 font-black uppercase text-[8px]" 
-                        title="Retur Barang"
-                      >
-                        <RefreshCcw className="w-3 h-3" />
-                        <span>Retur</span>
-                      </button>
-
-                      <button 
-                        onClick={() => {
-                          setShowModal(p);
-                          setVariants(p.variants || []);
-                          setModalMode('reduce');
-                        }} 
-                        className="px-2.5 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded-lg transition-all shadow-sm flex items-center gap-1 font-black uppercase text-[8px]" 
-                        title="Kurangi Stok (Rusak/Lainnya)"
-                      >
-                        <Minus className="w-3 h-3" />
-                        <span>Manual</span>
-                      </button>
-                      
-                      <button 
-                        onClick={() => {
-                          setShowModal(p);
-                          setVariants(p.variants || []);
-                          setModalMode('adjust');
-                        }} 
-                        className="px-2.5 py-1.5 bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white rounded-lg transition-all shadow-sm flex items-center gap-1 font-black uppercase text-[8px]" 
-                        title="Sesuaikan / Edit"
-                      >
-                        <RefreshCcw className="w-3 h-3" />
-                        <span>Update</span>
-                      </button>
-                      
-                      <button onClick={() => setConfirmDelete(p)} className="p-1.5 bg-slate-50 text-slate-400 hover:bg-rose-500 hover:text-white rounded-lg transition-all shadow-sm" title="Hapus"><Trash2 className="w-3.5 h-3.5" /></button>
+                  <td className="px-6 py-4 text-right font-black text-emerald-600 text-[13px] tabular-nums">{formatCurrency(p.sellPrice)}</td>
+                  <td className="px-6 py-4 text-center">
+                    <div className={cn(
+                      "inline-flex items-center justify-center min-w-[32px] h-8 px-3 rounded-xl text-[11px] font-black tabular-nums border",
+                      p.stock <= p.minStock ? "bg-rose-500 text-white border-rose-600 shadow-lg shadow-rose-200" : "bg-slate-100 text-slate-600 border-slate-200"
+                    )}>
+                      {p.stock}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex justify-end items-center gap-1.5">
+                      <button onClick={() => { setShowModal(p); setVariants(p.variants || []); setModalMode('add'); setSelectedSupplierId(''); }} className="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-xl transition-all shadow-sm active:scale-90"><Plus className="w-4 h-4" /></button>
+                      <button onClick={() => { setShowModal(p); setVariants(p.variants || []); setModalMode('return'); setSelectedReturnReason(''); }} className="p-2 bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white rounded-xl transition-all shadow-sm active:scale-90"><RefreshCcw className="w-4 h-4" /></button>
+                      <button onClick={() => { setShowModal(p); setVariants(p.variants || []); setModalMode('adjust'); }} className="p-2 bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white rounded-xl transition-all shadow-sm active:scale-90"><Edit className="w-4 h-4" /></button>
+                      <button onClick={() => setConfirmDelete(p)} className="p-2 bg-slate-50 text-slate-300 hover:bg-rose-500 hover:text-white rounded-xl transition-all shadow-sm active:scale-90"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   </td>
                 </tr>
@@ -390,6 +375,79 @@ export default function StockView({
             </tbody>
           </table>
         </div>
+
+        {/* Mobile View */}
+        <div className="md:hidden divide-y divide-slate-50">
+          {sortedProducts.map((p: any) => (
+            <motion.div 
+              layout
+              key={p.id} 
+              className="p-5 active:bg-slate-50 transition-colors"
+            >
+              <div className="flex gap-4 items-start mb-4">
+                <div className={cn(
+                  "w-14 h-14 rounded-[20px] flex items-center justify-center shrink-0 border-2 shadow-sm",
+                  p.stock <= p.minStock ? "bg-rose-50 border-rose-100 text-rose-500" : "bg-slate-50 border-slate-100 text-slate-300"
+                )}>
+                  <Package className="w-7 h-7" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start gap-2 mb-1">
+                    <div className="text-[13px] font-black text-slate-800 uppercase truncate leading-tight">{p.name}</div>
+                    <div className={cn(
+                      "px-2.5 py-1 rounded-xl text-[10px] font-black tabular-nums border",
+                      p.stock <= p.minStock ? "bg-rose-500 text-white border-rose-600 shadow-lg shadow-rose-100" : "bg-slate-100 text-slate-600 border-slate-200"
+                    )}>
+                      {p.stock}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded-lg">{p.category}</span>
+                    <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest border border-emerald-100 px-2 py-0.5 rounded-lg">{formatCurrency(p.sellPrice)}</span>
+                  </div>
+                  {p.hasVariants && p.variants && p.variants.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {p.variants.map((v: any) => (
+                        <div key={v.id} className={cn(
+                          "text-[7px] font-black px-2 py-0.5 rounded-lg border flex items-center gap-1 uppercase tracking-tighter",
+                          v.stock <= 0 ? "bg-rose-50 text-rose-400 border-rose-100" : "bg-slate-50 text-slate-500 border-slate-200"
+                        )}>
+                          {v.name}: {v.stock}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-2">
+                <button onClick={() => { setShowModal(p); setVariants(p.variants || []); setModalMode('add'); setSelectedSupplierId(''); }} className="flex flex-col items-center justify-center gap-1 py-3 bg-emerald-50 text-emerald-600 rounded-2xl active:bg-emerald-500 active:text-white transition-all">
+                  <Plus className="w-4 h-4" />
+                  <span className="text-[7px] font-black uppercase">Restock</span>
+                </button>
+                <button onClick={() => { setShowModal(p); setVariants(p.variants || []); setModalMode('return'); setSelectedReturnReason(''); }} className="flex flex-col items-center justify-center gap-1 py-3 bg-orange-50 text-orange-600 rounded-2xl active:bg-orange-500 active:text-white transition-all">
+                  <RefreshCcw className="w-4 h-4" />
+                  <span className="text-[7px] font-black uppercase">Retur</span>
+                </button>
+                <button onClick={() => { setShowModal(p); setVariants(p.variants || []); setModalMode('adjust'); }} className="flex flex-col items-center justify-center gap-1 py-3 bg-blue-50 text-blue-500 rounded-2xl active:bg-blue-500 active:text-white transition-all">
+                  <Edit className="w-4 h-4" />
+                  <span className="text-[7px] font-black uppercase">Edit</span>
+                </button>
+                <button onClick={() => setConfirmDelete(p)} className="flex flex-col items-center justify-center gap-1 py-3 bg-slate-50 text-slate-400 rounded-2xl active:bg-rose-500 active:text-white transition-all">
+                  <Trash2 className="w-4 h-4" />
+                  <span className="text-[7px] font-black uppercase">Hapus</span>
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {sortedProducts.length === 0 && (
+          <div className="py-20 text-center flex flex-col items-center justify-center opacity-10 grayscale">
+            <Package className="w-16 h-16 mb-4" />
+            <div className="text-[10px] font-black uppercase tracking-[0.2em]">Tidak Ada Data Barang</div>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
@@ -422,7 +480,7 @@ export default function StockView({
                  </h3>
                  <button onClick={() => setShowModal(null)} className="p-2 hover:bg-slate-50 rounded-full"><X className="w-5 h-5 text-slate-400" /></button>
                </div>
-               <form onSubmit={handleSave} className="p-8 space-y-4 grid grid-cols-2 gap-x-6 overflow-y-auto no-scrollbar">
+               <form onSubmit={handleSave} className="p-8 space-y-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 overflow-y-auto no-scrollbar">
                  <div className="col-span-2 space-y-1 relative">
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nama Barang</label>
                    <input required className="w-full bg-slate-50 px-4 py-3 border-none rounded-2xl text-sm" value={showModal.name} onChange={e => setShowModal({...showModal, name: e.target.value})} readOnly={showModal.id !== undefined && modalMode !== 'adjust'} />

@@ -114,82 +114,91 @@ export default function DashboardView({
   const totalCashBank = cashBalance + bankBalance;
 
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <div className="space-y-4 md:space-y-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         {userRole === 'owner' ? (
-          <StatCard title="Saldo Cash + Bank" value={formatCurrency(totalCashBank)} subValue={`Cash: ${formatCurrency(cashBalance)} / Bank: ${formatCurrency(bankBalance)}`} icon={Wallet} color="blue" trend="Balance Total" />
+          <StatCard title="Saldo Kas" value={formatCurrency(totalCashBank)} icon={Wallet} color="blue" trend="Total" />
         ) : (
-          <StatCard title="Saldo Cash (Toko)" value={formatCurrency(cashBalance)} subValue="Saldo Fisik di Toko" icon={Wallet} color="blue" trend="Cash Only" />
+          <StatCard title="Saldo Kas" value={formatCurrency(cashBalance)} icon={Wallet} color="blue" trend="Lokal" />
         )}
-        <StatCard title="Keuntungan Hari Ini" value={formatCurrency(todayProfit)} subValue="Estimasi Laba Bersih" icon={TrendingUp} color="emerald" trend="Profit" />
-        <StatCard title="Total Aset Digital" value={formatCurrency(totalDigitalAsset)} subValue="Saldo Pulsa & Transfer" icon={Smartphone} color="amber" trend="Ready" />
-        <StatCard title="Beban Hari Ini" value={formatCurrency(todayExpenses)} subValue="Operasional" icon={TrendingDown} color="rose" trend="Cost" />
+        <StatCard title="Laba" value={formatCurrency(todayProfit)} icon={TrendingUp} color="emerald" trend="Hari Ini" />
+        <StatCard title="E-Asset" value={formatCurrency(totalDigitalAsset)} icon={Smartphone} color="amber" trend="Digital" />
+        <StatCard title="Biaya" value={formatCurrency(todayExpenses)} icon={TrendingDown} color="rose" trend="Hari Ini" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-slate-800">Performa 7 Hari</h3>
-            <div className="flex gap-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-               <span className="flex items-center gap-1.5"><span className="w-2 h-2 bg-blue-500 rounded-full"></span> Penjualan</span>
-               <span className="flex items-center gap-1.5"><span className="w-2 h-2 bg-rose-500 rounded-full"></span> Beban</span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+        <div className="lg:col-span-2 bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex justify-between items-center mb-4 md:mb-6">
+            <h3 className="font-black text-slate-800 uppercase tracking-tight text-xs md:text-sm">Performa 7 Hari</h3>
+            <div className="flex gap-2 text-[8px] md:text-[10px] font-black uppercase tracking-widest text-slate-400">
+               <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span> Jual</span>
+               <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 bg-rose-500 rounded-full"></span> Biaya</span>
             </div>
           </div>
-          <div className="h-64 w-full">
+          <div className="h-48 md:h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: '#64748b'}} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 9, fontWeight: 'bold', fill: '#94a3b8'}} />
                 <YAxis hide />
-                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                <Area type="monotone" dataKey="sales" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
-                <Area type="monotone" dataKey="expenses" stroke="#f43f5e" strokeWidth={2} strokeDasharray="5 5" fill="none" />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '10px' }} />
+                <Area type="monotone" dataKey="sales" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorSales)" />
+                <Area type="monotone" dataKey="expenses" stroke="#f43f5e" strokeWidth={1.5} strokeDasharray="4 4" fill="none" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
-          <h3 className="font-bold text-slate-800 flex items-center gap-2 mb-4"><AlertTriangle className="w-4 h-4 text-rose-500" /> Stok Menipis</h3>
-          <div className="flex-1 space-y-3 overflow-y-auto no-scrollbar">
+        <div className="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col max-h-[400px]">
+          <h3 className="font-black text-slate-800 uppercase tracking-tight text-xs md:text-sm flex items-center gap-2 mb-4"><AlertTriangle className="w-3 h-3 text-rose-500" /> Stok Kritis</h3>
+          <div className="flex-1 space-y-2 overflow-y-auto no-scrollbar pr-1">
             {allLowStock.map(p => (
-              <div key={p.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <div className="min-w-0 flex-1"><div className="text-sm font-bold text-slate-800 truncate">{p.name}</div><div className="text-[10px] text-slate-400 uppercase font-black">{p.category}</div></div>
-                <div className="text-right ml-4 font-black text-rose-500">{p.stock}</div>
+              <div key={p.id} className="flex items-center justify-between p-2.5 bg-slate-50 border-l-4 border-rose-500 rounded-r-xl transition-all hover:bg-slate-100">
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11px] font-black text-slate-800 truncate uppercase leading-tight">{p.name}</div>
+                  <div className="text-[8px] text-slate-400 uppercase font-black tracking-widest">{p.category}</div>
+                </div>
+                <div className="text-right ml-4 font-black text-rose-600 tabular-nums bg-rose-50 px-2 py-0.5 rounded text-[11px]">{p.stock}</div>
               </div>
             ))}
+            {allLowStock.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-10 opacity-30 grayscale">
+                 <Package className="w-8 h-8 mb-2" />
+                 <span className="text-[10px] font-black uppercase tracking-widest">Aman Terkendali</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+        <div className="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-blue-500" />
-              Top 5 Produk Terlaris (Kuantitas)
+            <h3 className="font-black text-slate-800 uppercase tracking-tight text-xs md:text-sm flex items-center gap-2">
+              <BarChart3 className="w-3 h-3 text-blue-500" />
+              Produk Terlaris
             </h3>
           </div>
-          <div className="h-64 w-full">
+          <div className="h-48 md:h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topProducts} layout="vertical" margin={{ left: 20, right: 30, top: 0, bottom: 0 }}>
+              <BarChart data={topProducts} layout="vertical" margin={{ left: -10, right: 30, top: 0, bottom: 0 }}>
                 <XAxis type="number" hide />
                 <YAxis 
                   dataKey="name" 
                   type="category" 
                   axisLine={false} 
                   tickLine={false} 
-                  width={120}
-                  tick={{ fontSize: 10, fontWeight: 'bold', fill: '#64748b' }}
+                  width={100}
+                  tick={{ fontSize: 9, fontWeight: 'bold', fill: '#64748b' }}
                 />
                 <Tooltip 
                   cursor={{ fill: 'transparent' }}
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '10px' }}
                 />
-                <Bar dataKey="count" radius={[0, 10, 10, 0]} barSize={20}>
+                <Bar dataKey="count" radius={[0, 6, 6, 0]} barSize={14}>
                   {topProducts.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
@@ -199,22 +208,25 @@ export default function DashboardView({
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
-          <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <Package className="w-4 h-4 text-emerald-500" />
-            Ringkasan Penjualan
+        <div className="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+          <h3 className="font-black text-slate-800 uppercase tracking-tight text-xs md:text-sm mb-6 flex items-center gap-2">
+            <ArrowUpRight className="w-3 h-3 text-emerald-500" />
+            Rank Penjualan
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-3">
              {topProducts.map((p, i) => (
-               <div key={i} className="flex items-center justify-between">
+               <div key={i} className="flex items-center justify-between group cursor-default">
                  <div className="flex items-center gap-3">
-                   <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black text-white" style={{ backgroundColor: COLORS[i % COLORS.length] }}>{i+1}</div>
-                   <div className="text-xs font-bold text-slate-700 truncate max-w-[120px]">{p.name}</div>
+                   <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black text-white shadow-sm ring-2 ring-white" style={{ backgroundColor: COLORS[i % COLORS.length] }}>{i+1}</div>
+                   <div className="text-[11px] font-black text-slate-800 uppercase truncate max-w-[150px] group-hover:text-emerald-500 transition-colors">{p.name}</div>
                  </div>
-                 <div className="text-xs font-black text-slate-400">{p.count} <span className="text-[10px] uppercase">Terjual</span></div>
+                 <div className="text-[10px] font-black text-slate-400 flex items-center gap-1.5 tabular-nums">
+                   <span className="text-slate-800">{p.count}</span>
+                   <span className="uppercase tracking-tighter opacity-70">Unit</span>
+                 </div>
                </div>
              ))}
-             {topProducts.length === 0 && <div className="text-center py-10 text-slate-300 text-xs font-bold uppercase tracking-widest">Belum ada data</div>}
+             {topProducts.length === 0 && <div className="text-center py-10 text-slate-300 text-[10px] font-black uppercase tracking-widest leading-loose">Data penjualan<br/>belum tersedia</div>}
           </div>
         </div>
       </div>
@@ -222,24 +234,38 @@ export default function DashboardView({
   );
 }
 
-function StatCard({ title, value, subValue, icon: Icon, color, trend }: any) {
+function StatCard({ title, value, icon: Icon, color, trend }: any) {
   const styles = {
-    blue: 'bg-blue-600 text-white shadow-blue-100',
-    rose: 'bg-rose-500 text-white shadow-rose-100',
-    emerald: 'bg-emerald-500 text-white shadow-emerald-100',
-    amber: 'bg-amber-500 text-white shadow-amber-100',
+    blue: 'border-blue-100 text-blue-700 bg-blue-50/30',
+    rose: 'border-rose-100 text-rose-700 bg-rose-50/30',
+    emerald: 'border-emerald-100 text-emerald-700 bg-emerald-50/30',
+    amber: 'border-amber-100 text-amber-700 bg-amber-50/30',
+  };
+
+  const ringColors = {
+    blue: 'ring-blue-500',
+    rose: 'ring-rose-500',
+    emerald: 'ring-emerald-500',
+    amber: 'ring-amber-500',
   };
 
   return (
-    <div className={cn("p-5 rounded-2xl shadow-xl", styles[color as keyof typeof styles])}>
-      <div className="flex justify-between items-start mb-4">
-        <div className="p-2 bg-white/20 rounded-lg"><Icon className="w-5 h-5" /></div>
-        <div className="text-[10px] font-black uppercase bg-black/10 px-2 py-0.5 rounded-full">{trend}</div>
+    <div className={cn(
+      "p-3 md:p-5 rounded-2xl border transition-all hover:scale-[1.02] active:scale-95 cursor-default group overflow-hidden relative", 
+      styles[color as keyof typeof styles]
+    )}>
+      <div className="absolute top-0 right-0 w-16 h-16 opacity-[0.03] translate-x-4 -translate-y-4 group-hover:scale-150 transition-transform">
+        <Icon className="w-full h-full" />
       </div>
-      <div>
-        <div className="text-[10px] font-bold uppercase opacity-80 mb-1">{title}</div>
-        <div className="text-2xl font-black">{value}</div>
-        <div className="mt-2 text-[10px] font-medium opacity-60 uppercase">{subValue}</div>
+      <div className="flex justify-between items-start mb-2 md:mb-4 relative z-10">
+        <div className={cn("p-1.5 md:p-2 bg-white rounded-lg shadow-sm ring-1", ringColors[color as keyof typeof ringColors])}>
+          <Icon className="w-3.5 h-3.5 md:w-5 md:h-5" />
+        </div>
+        <div className="text-[7px] md:text-[9px] font-black uppercase bg-white/50 px-2 py-0.5 rounded-full border border-current opacity-70">{trend}</div>
+      </div>
+      <div className="relative z-10">
+        <div className="text-[7px] md:text-[9px] font-black uppercase opacity-60 mb-0.5 tracking-widest">{title}</div>
+        <div className="text-sm md:text-xl font-black truncate tabular-nums">{value}</div>
       </div>
     </div>
   );

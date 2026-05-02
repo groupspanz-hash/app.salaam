@@ -255,339 +255,441 @@ export default function TransactionView({
   };
 
   return (
-    <div className="relative h-full">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
-        <div className="lg:col-span-8 flex flex-col gap-6">
-        <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-3xl border border-slate-200">
-          <div className="flex-1">
-            <input type="text" placeholder="Cari barang..." className="w-full px-4 py-2 bg-slate-50 border-none rounded-xl text-sm" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-          </div>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar">
-            {categories.map((cat:any) => (
-              <button key={cat} onClick={() => setSelectedCategory(cat)} className={cn("px-4 py-2 rounded-xl text-xs font-black uppercase", selectedCategory === cat ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-400 transition-colors")}>{cat}</button>
-            ))}
-          </div>
-        </div>
-        <div className="flex-1 overflow-y-auto no-scrollbar grid grid-cols-2 md:grid-cols-4 gap-4 pb-20">
-          {(selectedCategory === 'Digital' || selectedCategory === 'All') && (
-            <div className="col-span-2 md:col-span-4 space-y-4">
-              <div className="flex bg-white p-1 rounded-2xl border border-slate-100 shadow-sm w-fit">
+    <div className="relative h-full flex flex-col">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 h-full min-h-0">
+        <div className="lg:col-span-8 flex flex-col gap-4 min-h-0 pb-20 lg:pb-0">
+          <div className="flex flex-col sm:flex-row gap-3 bg-white p-3 md:p-4 rounded-3xl border border-slate-200 sticky top-0 z-10 shadow-sm">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+              <input 
+                type="text" 
+                placeholder="Cari ID/Nama Barang..." 
+                className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-xs md:text-sm focus:ring-2 focus:ring-emerald-500 outline-none" 
+                value={searchTerm} 
+                onChange={e => setSearchTerm(e.target.value)} 
+              />
+            </div>
+            <div className="flex gap-2 overflow-x-auto no-scrollbar scroll-smooth">
+              {categories.map((cat:any) => (
                 <button 
-                  onClick={() => setDigitalTab('pulsa')} 
-                  className={cn("px-6 py-2 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2", digitalTab === 'pulsa' ? "bg-blue-600 text-white shadow-lg shadow-blue-100" : "text-slate-400 hover:text-blue-500")}
+                  key={cat} 
+                  onClick={() => setSelectedCategory(cat)} 
+                  className={cn(
+                    "px-4 py-2 rounded-xl text-[10px] font-black uppercase whitespace-nowrap transition-all border", 
+                    selectedCategory === cat 
+                      ? "bg-slate-900 text-white border-slate-900 shadow-md" 
+                      : "bg-white text-slate-400 border-slate-100 hover:border-slate-300"
+                  )}
                 >
-                  <Smartphone className="w-3 h-3" /> Pulsa
+                  {cat}
                 </button>
-                <button 
-                  onClick={() => setDigitalTab('transfer')} 
-                  className={cn("px-6 py-2 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-2", digitalTab === 'transfer' ? "bg-purple-600 text-white shadow-lg shadow-purple-100" : "text-slate-400 hover:text-purple-500")}
-                >
-                  <Send className="w-3 h-3" /> Transfer
-                </button>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {PULSA_NOMINALS.map(nom => (
+              ))}
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto no-scrollbar grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {(selectedCategory === 'Digital' || selectedCategory === 'All') && (
+              <div className="col-span-2 lg:col-span-4 space-y-4 mb-4">
+                <div className="flex bg-slate-100 p-1 rounded-2xl w-full sm:w-fit">
                   <button 
-                    key={nom} 
-                    onClick={() => {
-                      const currentBalance = digitalTab === 'pulsa' ? pulseBalance : transferBalance;
-                      if (currentBalance < nom) {
-                        alert(`Saldo ${digitalTab === 'pulsa' ? 'Pulsa' : 'Transfer'} tidak cukup!`);
-                        return;
-                      }
-                      setDigitalPending({ nominal: nom, type: digitalTab });
-                    }} 
+                    onClick={() => setDigitalTab('pulsa')} 
                     className={cn(
-                      "p-4 rounded-3xl text-white text-left shadow-lg hover:scale-105 transition-transform",
-                      digitalTab === 'pulsa' ? "bg-blue-600 shadow-blue-50" : "bg-purple-600 shadow-purple-50"
+                      "flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2", 
+                      digitalTab === 'pulsa' ? "bg-white text-blue-600 shadow-sm" : "text-slate-400"
                     )}
                   >
-                    {digitalTab === 'pulsa' ? <Smartphone className="opacity-50 mb-2 w-4 h-4" /> : <Send className="opacity-50 mb-2 w-4 h-4" />}
-                    <div className="text-2xl font-black">{nom >= 1000 ? nom/1000 : nom}K</div>
-                    <div className="text-[10px] font-bold opacity-80">Pilih Biaya Admin</div>
+                    <Smartphone className="w-3.5 h-3.5" /> PULSA
                   </button>
-                ))}
+                  <button 
+                    onClick={() => setDigitalTab('transfer')} 
+                    className={cn(
+                      "flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2", 
+                      digitalTab === 'transfer' ? "bg-white text-purple-600 shadow-sm" : "text-slate-400"
+                    )}
+                  >
+                    <Send className="w-3.5 h-3.5" /> TRANSFER
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {PULSA_NOMINALS.map(nom => (
+                    <button 
+                      key={nom} 
+                      onClick={() => {
+                        const currentBalance = digitalTab === 'pulsa' ? pulseBalance : transferBalance;
+                        if (currentBalance < nom) {
+                          alert(`Saldo ${digitalTab === 'pulsa' ? 'Pulsa' : 'Transfer'} tidak cukup!`);
+                          return;
+                        }
+                        setDigitalPending({ nominal: nom, type: digitalTab });
+                      }} 
+                      className={cn(
+                        "p-4 rounded-3xl text-white text-left transition-all active:scale-95 group overflow-hidden relative",
+                        digitalTab === 'pulsa' ? "bg-blue-600" : "bg-purple-600"
+                      )}
+                    >
+                      <div className="absolute top-0 right-0 w-12 h-12 opacity-10 translate-x-3 -translate-y-3">
+                        {digitalTab === 'pulsa' ? <Smartphone className="w-full h-full" /> : <Send className="w-full h-full" />}
+                      </div>
+                      <div className="text-2xl font-black">{nom >= 1000 ? nom/1000 : nom}K</div>
+                      <div className="text-[9px] font-bold opacity-70 uppercase tracking-widest mt-1">Ready</div>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-          {filteredProducts.map((p:any) => (
-            <button key={p.id} onClick={() => addToCart(p)} disabled={p.stock <= 0} className={cn("bg-white p-3 rounded-2xl border border-slate-200 text-left hover:border-emerald-500 transition-all relative", p.stock <= 0 && "opacity-50")}>
-              <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center mb-2 text-slate-300"><Package className="w-4 h-4" /></div>
-              <div className="text-[8px] font-black text-slate-400 uppercase mb-0.5">{p.category}</div>
-              <div className="text-xs font-bold text-slate-800 line-clamp-2 h-8 mb-1 leading-tight">{p.name}</div>
-              <div className="text-sm font-black text-emerald-600">{formatCurrency(p.sellPrice)}</div>
-              <div className="absolute top-3 right-3 text-[8px] font-black text-slate-300">S: {p.stock}</div>
-            </button>
-          ))}
+            )}
+            
+            {filteredProducts.map((p:any) => (
+              <button 
+                key={p.id} 
+                onClick={() => addToCart(p)} 
+                disabled={p.stock <= 0} 
+                className={cn(
+                  "bg-white p-3 rounded-2xl border border-slate-200 text-left transition-all hover:shadow-md active:scale-95 flex flex-col justify-between h-[140px] relative overflow-hidden group",
+                  p.stock <= 0 && "grayscale opacity-50"
+                )}
+              >
+                <div className="absolute top-0 right-0 p-2 bg-slate-50 rounded-bl-xl text-[9px] font-black tabular-nums text-slate-400">
+                  {p.stock} <span className="opacity-50">STOK</span>
+                </div>
+                
+                <div>
+                  <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-300 group-hover:text-emerald-500 transition-colors">
+                    <Package className="w-4 h-4" />
+                  </div>
+                  <div className="mt-2">
+                    <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{p.category}</div>
+                    <div className="text-[11px] font-black text-slate-800 line-clamp-2 leading-tight uppercase">{p.name}</div>
+                  </div>
+                </div>
+                
+                <div className="text-sm font-black text-emerald-600 mt-2">
+                  {formatCurrency(p.sellPrice)}
+                </div>
+              </button>
+            ))}
+            
+            {filteredProducts.length === 0 && selectedCategory !== 'Digital' && (
+              <div className="col-span-2 lg:col-span-4 py-20 text-center flex flex-col items-center justify-center opacity-30">
+                <Search className="w-10 h-10 mb-4" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Produk tidak ditemukan</span>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-        {/* Cart Overlay for Mobile */}
+
+        {/* Cart Overlay for Mobile & Desktop Panel */}
         <div className={cn(
-          "fixed inset-0 z-40 lg:relative lg:inset-auto lg:col-span-4 transition-transform duration-300 transform",
-          isMobileCartOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0",
-          !isMobileCartOpen && "pointer-events-none lg:pointer-events-auto"
+          "fixed inset-0 z-40 lg:relative lg:inset-auto lg:col-span-4 transition-transform duration-300 pointer-events-none lg:pointer-events-auto",
+          isMobileCartOpen ? "translate-x-0 pointer-events-auto" : "translate-x-full lg:translate-x-0"
         )}>
           {/* Backdrop for mobile */}
           <div 
-            className={cn("absolute inset-0 bg-black/40 lg:hidden transition-opacity", isMobileCartOpen ? "opacity-100" : "opacity-0")}
+            className={cn("absolute inset-0 bg-slate-900/60 backdrop-blur-sm lg:hidden transition-opacity", isMobileCartOpen ? "opacity-100" : "opacity-0")}
             onClick={() => setIsMobileCartOpen(false)}
           />
           
-          <div className="absolute right-0 top-0 bottom-0 w-[90%] lg:w-full bg-white rounded-l-3xl lg:rounded-3xl border-l lg:border border-slate-200 shadow-2xl flex flex-col overflow-hidden h-full">
-            <div className="p-6 border-b flex justify-between items-center">
-              <h3 className="font-bold flex items-center gap-2 text-slate-800">
-                <ShoppingCart className="text-emerald-500" /> 
-                Keranjang
-              </h3>
+          <div className="absolute right-0 top-0 bottom-0 w-[85%] lg:w-full bg-white lg:rounded-3xl border-l lg:border border-slate-200 shadow-2xl flex flex-col h-[100dvh] lg:h-full overflow-hidden">
+            <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-black text-slate-300 uppercase">{cart.length} ITEMS</span>
-                <button onClick={() => setIsMobileCartOpen(false)} className="lg:hidden p-2 bg-slate-100 rounded-full">
-                  <Check className="w-4 h-4 text-emerald-500" />
+                <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
+                  <ShoppingCart className="w-4 h-4 text-emerald-600" />
+                </div>
+                <h3 className="font-black text-sm text-slate-800 uppercase tracking-tight">KASIR</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full uppercase tabular-nums">
+                  {cart.length} ITEMS
+                </span>
+                <button onClick={() => setIsMobileCartOpen(false)} className="lg:hidden p-1.5 bg-slate-100 rounded-full">
+                  <X className="w-4 h-4 text-slate-400" />
                 </button>
               </div>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar bg-slate-50/50">
               {cart.map(item => (
-                 <div key={`${item.productId}-${item.variantId || ''}`} className="flex flex-col gap-3 p-3 border border-slate-100 rounded-2xl bg-white shadow-sm">
-                   <div className="flex justify-between items-start">
-                      <div className="flex gap-3">
-                         <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", 
-                           item.isPulse ? (item.digitalType === 'pulsa' ? "bg-blue-50 text-blue-600" : "bg-purple-50 text-purple-600") : "bg-slate-50 text-slate-400"
-                         )}>
-                           {item.isPulse ? (item.digitalType === 'pulsa' ? <Smartphone className="w-5 h-5" /> : <Send className="w-5 h-5" />) : <Package className="w-5 h-5" />}
-                         </div>
-                         <div className="font-bold">
-                            <div className="text-sm text-slate-800 line-clamp-2 leading-tight">{item.name}</div>
-                            <div className="text-[10px] text-slate-400 mt-0.5">{formatCurrency(item.price)} x {item.quantity}</div>
-                         </div>
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  key={`${item.productId}-${item.variantId || ''}`} 
+                  className="flex flex-col gap-3 p-3 border border-slate-200 rounded-2xl bg-white shadow-sm ring-1 ring-black/[0.02]"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex gap-3">
+                      <div className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border", 
+                        item.isPulse ? (item.digitalType === 'pulsa' ? "bg-blue-50 border-blue-100 text-blue-600" : "bg-purple-50 border-purple-100 text-purple-600") : "bg-slate-50 border-slate-100 text-slate-400"
+                      )}>
+                        {item.isPulse ? (item.digitalType === 'pulsa' ? <Smartphone className="w-5 h-5" /> : <Send className="w-5 h-5" />) : <Package className="w-5 h-5" />}
                       </div>
-                      <button onClick={() => updateCartItemQuantity(item.productId, item.variantId, 0)} className="text-slate-200 hover:text-rose-500 transition-colors p-1 shrink-0">
-                         <Trash2 className="w-4 h-4" />
+                      <div className="min-w-0">
+                        <div className="text-[11px] font-black text-slate-800 line-clamp-2 leading-none uppercase mb-1">{item.name}</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest tabular-nums">{formatCurrency(item.price)}</div>
+                      </div>
+                    </div>
+                    <button onClick={() => updateCartItemQuantity(item.productId, item.variantId, 0)} className="text-slate-200 hover:text-rose-500 transition-colors p-1.5">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-2 border-t border-slate-50">
+                    <div className="text-sm font-black text-slate-800 tabular-nums">{formatCurrency(item.subtotal)}</div>
+                    <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                      <button 
+                        onClick={() => updateCartItemQuantity(item.productId, item.variantId, item.quantity - 1)} 
+                        className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-500 hover:text-emerald-600 transition-all active:scale-90"
+                      >
+                        <Minus className="w-3 h-3" />
                       </button>
-                   </div>
-                   <div className="flex justify-between items-center pt-2 border-t border-slate-50">
-                      <div className="flex flex-col">
-                         <span className="text-[8px] uppercase tracking-widest text-slate-400 font-black">Subtotal</span>
-                         <span className="text-sm font-black text-slate-800">{formatCurrency(item.subtotal)}</span>
-                      </div>
-                      <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-100">
-                         <button onClick={() => updateCartItemQuantity(item.productId, item.variantId, item.quantity - 1)} className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-500 hover:text-emerald-600 transition-colors">
-                            <Minus className="w-3 h-3" />
-                         </button>
-                         <input 
-                           type="number" 
-                           value={item.quantity} 
-                           onChange={(e) => updateCartItemQuantity(item.productId, item.variantId, Number(e.target.value))} 
-                           className="w-10 text-center text-xs font-black bg-transparent border-none p-0 focus:ring-0" 
-                           min="0"
-                         />
-                         <button onClick={() => updateCartItemQuantity(item.productId, item.variantId, item.quantity + 1)} className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-500 hover:text-emerald-600 transition-colors">
-                            <Plus className="w-3 h-3" />
-                         </button>
-                      </div>
-                   </div>
-                 </div>
+                      <input 
+                        type="number" 
+                        value={item.quantity} 
+                        readOnly
+                        className="w-8 text-center text-xs font-black bg-transparent border-none p-0 focus:ring-0 tabular-nums" 
+                      />
+                      <button 
+                        onClick={() => updateCartItemQuantity(item.productId, item.variantId, item.quantity + 1)} 
+                        className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-slate-500 hover:text-emerald-600 transition-all active:scale-90"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
               ))}
+              
               {cart.length === 0 && (
-                <div className="py-20 text-center flex flex-col items-center justify-center opacity-20">
-                  <ShoppingCart className="w-12 h-12 mb-4" />
-                  <div className="text-xs font-black uppercase tracking-widest">Kosong</div>
+                <div className="py-20 text-center flex flex-col items-center justify-center opacity-10 grayscale">
+                  <ShoppingCart className="w-16 h-16 mb-4" />
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em]">KERANJANG KOSONG</div>
                 </div>
               )}
             </div>
 
-            <div className="p-6 bg-slate-50 border-t space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <input 
-                  type="text" 
-                  placeholder="Nama Customer" 
-                  className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none w-full" 
-                  value={customerName} 
-                  onChange={e => setCustomerName(e.target.value)} 
-                />
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300">+/-</span>
+            <div className="p-4 md:p-6 bg-white border-t border-slate-200 space-y-4">
+              <div className="flex flex-col gap-2">
+                <div className="flex bg-slate-100 p-1 rounded-xl">
                   <input 
-                    type="number" 
-                    placeholder="Diskon" 
-                    className="bg-white border border-slate-200 rounded-xl pl-12 pr-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none w-full" 
-                    value={discount || ''} 
-                    onChange={e => setDiscount(Number(e.target.value))} 
+                    type="text" 
+                    placeholder="NAMA CUSTOMER (OPSIONAL)" 
+                    className="flex-1 bg-transparent border-none px-3 py-2 text-[10px] font-bold placeholder:text-slate-400 focus:ring-0 outline-none uppercase" 
+                    value={customerName} 
+                    onChange={e => setCustomerName(e.target.value)} 
                   />
+                  <div className="relative flex items-center w-28 bg-white rounded-lg border border-slate-200 px-2">
+                    <span className="text-[8px] font-black text-slate-400 mr-1 uppercase">Disc</span>
+                    <input 
+                      type="number" 
+                      placeholder="0" 
+                      className="w-full bg-transparent border-none px-1 py-1 text-xs font-black focus:ring-0 outline-none tabular-nums" 
+                      value={discount || ''} 
+                      onChange={e => setDiscount(Number(e.target.value))} 
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-2">
-                <div className="flex justify-between items-center text-[10px] font-black uppercase text-slate-400">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-[10px] font-bold uppercase text-slate-400 tabular-nums">
                   <span>Subtotal</span>
-                  <span className="text-slate-800">{formatCurrency(cartSubtotal)}</span>
+                  <span>{formatCurrency(cartSubtotal)}</span>
                 </div>
+                
                 {discount !== 0 && (
                   <div className={cn(
-                    "flex justify-between items-center text-[10px] font-black uppercase",
+                    "flex justify-between items-center text-[10px] font-black uppercase tabular-nums",
                     discount > 0 ? "text-emerald-500" : "text-blue-500"
                   )}>
-                    <span>{discount > 0 ? "Diskon" : "Biaya Tambahan"}</span>
+                    <span>{discount > 0 ? "DISKON" : "BIAYA LAIN"}</span>
                     <span>{discount > 0 ? "-" : "+"}{formatCurrency(Math.abs(discount))}</span>
                   </div>
                 )}
-                {applyTax && (
-                  <div className="flex justify-between items-center text-[10px] font-black uppercase text-blue-500">
-                    <span>PPN 11%</span>
-                    <span>+{formatCurrency(taxAmount)}</span>
-                  </div>
-                )}
-                <div 
-                  className="flex justify-between items-center bg-slate-50 rounded-lg px-2 py-1 cursor-pointer transition-colors hover:bg-slate-100" 
-                  onClick={() => setApplyTax(!applyTax)}
-                >
-                  <span className="text-[8px] font-black text-slate-400 uppercase">Aktifkan PPN</span>
-                  <div className={cn("w-6 h-3 rounded-full relative transition-colors", applyTax ? "bg-emerald-500" : "bg-slate-300")}>
-                    <div className={cn("absolute top-0.5 w-2 h-2 bg-white rounded-full transition-all", applyTax ? "right-0.5" : "left-0.5")}></div>
-                  </div>
+                
+                <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+                  <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">TOTAL TAGIHAN</div>
+                  <div className="text-xl font-black text-slate-900 tabular-nums tracking-tight">{formatCurrency(total)}</div>
                 </div>
                 
-                <div className="pt-2 border-t border-slate-100 flex justify-between items-end">
-                  <div>
-                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Bayar</div>
-                    <div className="text-2xl font-black text-emerald-600">{formatCurrency(total)}</div>
-                  </div>
+                <div className="pt-2">
                   <select 
-                    className="w-full text-xs font-black uppercase border-2 border-slate-100 rounded-2xl px-4 py-4 outline-none bg-white mb-2 focus:border-emerald-500 transition-all shadow-sm" 
+                    className="w-full text-[10px] font-black uppercase border-2 border-slate-100 rounded-xl px-3 py-2.5 outline-none bg-white focus:border-slate-900 transition-all shadow-sm" 
                     value={paymentMethod} 
                     onChange={e => setPaymentMethod(e.target.value)}
                   >
-                    <option value="Cash">💵 CASH (MASUK KAS)</option>
-                    <option value="Transfer">🏦 TRANSFER (MASUK BANK)</option>
-                    <option value="QRIS">📱 QRIS (MASUK BANK)</option>
+                    <option value="Cash">💵 SALDO CASH (TOKOKAS)</option>
+                    <option value="Transfer">🏦 BANK (BCA/MANDIRI/DLL)</option>
+                    <option value="QRIS">📱 DIGITAL (QRIS/E-WALLET)</option>
                   </select>
                 </div>
               </div>
 
               <button 
                 onClick={handleCheckout} 
-                className="w-full bg-slate-900 text-white font-black py-4 rounded-2xl shadow-xl shadow-slate-200 disabled:opacity-50 transition-all uppercase tracking-widest" 
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-2xl shadow-lg shadow-emerald-600/20 disabled:opacity-50 disabled:shadow-none transition-all uppercase tracking-[0.1em] text-xs active:scale-[0.98]" 
                 disabled={cart.length === 0}
               >
-                Bayar Sekarang
+                PROSES PEMBAYARAN
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Floating Action Button for Mobile Cart */}
-      <div className="lg:hidden fixed bottom-6 right-6 z-50">
+      <div className="lg:hidden fixed bottom-20 right-4 z-30">
         <button 
           onClick={() => setIsMobileCartOpen(true)}
-          className="relative bg-emerald-500 text-white p-4 rounded-full shadow-2xl shadow-emerald-200 hover:scale-110 active:scale-95 transition-transform"
+          className="relative bg-slate-900 text-white p-4 rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-transform"
         >
           <ShoppingCart className="w-6 h-6" />
           {cart.length > 0 && (
-            <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
+            <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-black w-6 h-6 flex items-center justify-center rounded-lg border-2 border-white tabular-nums shadow-lg">
               {cart.length}
             </span>
           )}
         </button>
       </div>
+
       <AnimatePresence>
         {variantModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[110] p-6">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[110] p-4">
             <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }} 
-              animate={{ scale: 1, opacity: 1 }} 
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden"
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} 
+              animate={{ scale: 1, opacity: 1, y: 0 }} 
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-white rounded-[24px] w-full max-w-sm shadow-2xl overflow-hidden"
             >
-              <div className="p-8">
+              <div className="p-6">
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-1">Pilih Varian</h3>
-                    <p className="text-slate-400 text-xs font-bold uppercase tracking-widest leading-relaxed">{variantModal.name}</p>
+                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight mb-0.5">Pilih Varian</h3>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest truncate max-w-[200px]">{variantModal.name}</p>
                   </div>
-                  <button onClick={() => setVariantModal(null)} className="p-2 hover:bg-slate-50 rounded-full"><X className="w-5 h-5 text-slate-400" /></button>
+                  <button onClick={() => setVariantModal(null)} className="p-1.5 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors"><X className="w-4 h-4 text-slate-400" /></button>
                 </div>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto no-scrollbar pr-2">
+                <div className="space-y-2 max-h-[50vh] overflow-y-auto no-scrollbar pr-1">
                   {variantModal.variants?.map(v => (
                     <button 
                       key={v.id}
                       disabled={v.stock <= 0}
                       onClick={() => addVariantToCart(variantModal, v)}
                       className={cn(
-                        "p-4 rounded-2xl border-2 text-left transition-all group flex flex-col justify-between h-32",
-                        v.stock > 0 ? "border-slate-100 hover:border-emerald-500 bg-white" : "border-slate-50 bg-slate-50 opacity-50 cursor-not-allowed"
+                        "w-full p-4 rounded-2xl border-2 text-left transition-all active:scale-[0.98] flex items-center justify-between",
+                        v.stock > 0 
+                          ? "border-slate-100 hover:border-emerald-500 bg-white shadow-sm" 
+                          : "border-slate-50 bg-slate-50 opacity-40 cursor-not-allowed"
                       )}
                     >
-                      <div>
-                        <div className="text-xs font-black text-slate-800 uppercase group-hover:text-emerald-500 transition-colors">{v.name}</div>
-                        <div className="text-[10px] font-bold text-slate-400 mt-1 uppercase">Stok: {v.stock}</div>
+                      <div className="min-w-0">
+                        <div className="text-[11px] font-black text-slate-800 uppercase truncate leading-tight mb-1">{v.name}</div>
+                        <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Stok: {v.stock}</div>
                       </div>
-                      <div className="text-lg font-black text-emerald-600">
+                      <div className="text-sm font-black text-emerald-600 tabular-nums">
                         {formatCurrency(v.sellPrice || variantModal.sellPrice!)}
                       </div>
                     </button>
                   ))}
                 </div>
 
-                <button 
-                  onClick={() => setVariantModal(null)}
-                  className="mt-8 w-full py-4 bg-slate-100 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest hover:bg-slate-200 transition-all"
-                >
-                  Batal
-                </button>
+                <div className="mt-6 pt-6 border-t border-slate-50">
+                  <button 
+                    onClick={() => setVariantModal(null)}
+                    className="w-full py-3 bg-slate-100 text-slate-400 font-black rounded-xl uppercase text-[10px] tracking-widest hover:bg-slate-200 transition-all"
+                  >
+                    Tutup Panel
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
+
       <AnimatePresence>
         {digitalPending && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-6">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
             <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }} 
-              animate={{ scale: 1, opacity: 1 }} 
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-[32px] w-full max-w-sm shadow-2xl overflow-hidden"
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} 
+              animate={{ scale: 1, opacity: 1, y: 0 }} 
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-white rounded-[24px] w-full max-w-sm shadow-2xl overflow-hidden"
             >
-              <div className="p-8 text-center">
+              <div className="p-6 text-center">
                 <div className={cn(
-                  "w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6",
-                  digitalPending.type === 'pulsa' ? "bg-blue-50 text-blue-500" : "bg-purple-50 text-purple-500"
+                  "w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 border shadow-sm",
+                  digitalPending.type === 'pulsa' ? "bg-blue-50 border-blue-100 text-blue-500" : "bg-purple-50 border-purple-100 text-purple-500"
                 )}>
-                  {digitalPending.type === 'pulsa' ? <Smartphone className="w-8 h-8" /> : <Send className="w-8 h-8" />}
+                  {digitalPending.type === 'pulsa' ? <Smartphone className="w-6 h-6" /> : <Send className="w-6 h-6" />}
                 </div>
-                <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-2">Pilih Biaya Admin</h3>
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-8">
-                  {digitalPending.type.toUpperCase()} {formatCurrency(digitalPending.nominal)}
+                <h3 className="text-sm font-black text-slate-800 uppercase tracking-tighter mb-1">PILIH BIAYA ADMIN</h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6 tabular-nums">
+                  {digitalPending.type} {formatCurrency(digitalPending.nominal)}
                 </p>
                 
-                <div className="grid grid-cols-2 gap-4">
-                  {[2000, 3000, 4000, 5000].map(fee => (
+                <div className="grid grid-cols-2 gap-3">
+                  {[1000, 2000, 3000, 5000].map(fee => (
                     <button 
                       key={fee}
                       onClick={() => addDigitalToCart(digitalPending.nominal, digitalPending.type, fee)}
-                      className="p-4 bg-slate-50 hover:bg-slate-100 rounded-2xl border-2 border-transparent hover:border-emerald-500 transition-all group text-center"
+                      className="p-4 bg-slate-50 hover:bg-white hover:border-emerald-500 rounded-2xl border-2 border-slate-50 transition-all group text-center shadow-sm active:scale-95"
                     >
-                      <div className="text-[10px] font-black text-slate-400 group-hover:text-emerald-500 mb-1 tracking-widest uppercase">Admin</div>
-                      <div className="text-xl font-black text-slate-800">{fee/1000}rb</div>
+                      <div className="text-[8px] font-black text-slate-400 group-hover:text-emerald-500 mb-1 uppercase tracking-widest">Fee</div>
+                      <div className="text-base font-black text-slate-800 tabular-nums">+{fee/1000}rb</div>
                     </button>
                   ))}
                 </div>
 
-                <button 
-                  onClick={() => setDigitalPending(null)}
-                  className="mt-8 w-full py-4 bg-slate-100 text-slate-400 font-black rounded-2xl uppercase text-[10px] tracking-widest hover:bg-slate-200 transition-all"
-                >
-                  Batal
-                </button>
+                <div className="mt-6 pt-6 border-t border-slate-50">
+                  <button 
+                    onClick={() => setDigitalPending(null)}
+                    className="w-full py-3 bg-slate-100 text-slate-400 font-black rounded-xl uppercase text-[10px] tracking-widest hover:bg-slate-200 transition-all"
+                  >
+                    Batal
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-      <AnimatePresence>{showReceipt && <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6"><motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-3xl p-8 w-full max-w-sm text-center shadow-2xl overflow-hidden"><div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6"><Check className="w-8 h-8" /></div><h4 className="text-2xl font-black text-slate-800 mb-2 uppercase tracking-wide">Transaksi OK</h4><p className="text-xs text-slate-400 mb-8 font-bold">Struk belanja siap dicetak!</p><button onClick={() => setShowReceipt(null)} className="w-full py-4 bg-emerald-500 text-white font-black rounded-2xl shadow-xl shadow-emerald-100 uppercase tracking-widest">Selesai</button></motion.div></div>}</AnimatePresence>
+
+      <AnimatePresence>
+        {showReceipt && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} 
+              animate={{ scale: 1, opacity: 1, y: 0 }} 
+              className="bg-white rounded-[24px] p-8 w-full max-w-sm text-center shadow-2xl relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>
+              <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-100">
+                <Check className="w-6 h-6" />
+              </div>
+              <h4 className="text-lg font-black text-slate-800 uppercase tracking-tight mb-2">Checkout Berhasil</h4>
+              <p className="text-[10px] text-slate-400 mb-6 font-bold uppercase tracking-widest leading-relaxed">Invoice generated for {showReceipt.customerName}.<br/>Saldo kas telah diperbarui.</p>
+              
+              <div className="bg-slate-50 rounded-2xl p-4 mb-8 space-y-2">
+                <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase">
+                  <span>ID Transaksi</span>
+                  <span className="text-slate-800">{showReceipt.id}</span>
+                </div>
+                <div className="flex justify-between items-center text-sm font-black text-slate-800 tabular-nums">
+                  <span>Total Bayar</span>
+                  <span className="text-emerald-600">{formatCurrency(showReceipt.total)}</span>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => setShowReceipt(null)} 
+                className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-2xl shadow-xl shadow-slate-200 uppercase tracking-[0.2em] text-[10px] transition-all"
+              >
+                Tutup Panel
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
