@@ -185,7 +185,7 @@ export default function FinanceView({
                     <tr><th className="px-6 py-4">Waktu</th><th className="px-6 py-4">Mutasi</th><th className="px-6 py-4 text-right">Nominal</th><th className="px-6 py-4">Catatan</th></tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50 font-bold">
-                    {transfers.map((t: any) => (
+                    {transfers.slice().sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((t: any) => (
                       <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="px-6 py-4 text-slate-400 text-[10px] font-black uppercase tabular-nums">
                           {new Date(t.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
@@ -207,7 +207,7 @@ export default function FinanceView({
 
               {/* Mobile View for Transfers */}
               <div className="md:hidden divide-y divide-slate-50">
-                {transfers.map((t: any) => (
+                {transfers.slice().sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((t: any) => (
                   <div key={t.id} className="p-4 active:bg-slate-50 transition-colors">
                     <div className="flex justify-between items-start mb-2">
                       <div className="text-[9px] text-slate-400 font-black uppercase tabular-nums">

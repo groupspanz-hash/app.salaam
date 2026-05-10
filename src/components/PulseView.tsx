@@ -208,7 +208,7 @@ export default function PulseView({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {digitalTopups.map((tp: any) => (
+              {digitalTopups.slice().sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((tp: any) => (
                 <tr key={tp.id} className="group hover:bg-slate-50/50 transition-colors">
                   <td className="px-4 md:px-6 py-4">
                     <div className="text-[11px] font-black text-slate-800 uppercase leading-none mb-1 group-hover:text-blue-600 transition-colors">{tp.platform}</div>

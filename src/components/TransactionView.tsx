@@ -222,15 +222,21 @@ export default function TransactionView({
 
     cart.forEach((item, index) => {
       if (item.isPulse) return;
-      newMovements.push({
+      
+      const newMovement: any = {
         id: `MOV-${now}-${item.productId}-${index}`,
         productId: item.productId,
-        productName: item.variantName ? `${item.name}` : item.name,
-        type: 'out' as const,
+        productName: item.name,
+        type: 'out',
         quantity: -item.quantity,
         date: new Date().toISOString(),
         description: `Penjualan (TRX-${now})`
-      });
+      };
+
+      if (item.variantId) newMovement.variantId = item.variantId;
+      if (item.variantName) newMovement.variantName = item.variantName;
+
+      newMovements.push(newMovement);
     });
 
     if (newMovements.length > 0) {

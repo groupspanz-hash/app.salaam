@@ -99,17 +99,18 @@ export default function ReportView({
     trx.items.forEach((item: any, idx: number) => {
       if (item.isPulse) return;
       
-      const newMovement = {
+      const newMovement: any = {
         id: `MOV-REV-SALE-${now}-${idx}`,
         productId: item.productId,
         productName: item.name,
-        variantId: item.variantId,
-        variantName: item.variantName,
         type: 'adjustment',
         quantity: item.quantity,
         date: new Date().toISOString(),
         description: `BATAL JUAL: TRX ${trx.id} DIHAPUS`,
       };
+      if (item.variantId) newMovement.variantId = item.variantId;
+      if (item.variantName) newMovement.variantName = item.variantName;
+
       setStockMovements((prev: any) => [newMovement, ...prev]);
     });
 
@@ -119,6 +120,78 @@ export default function ReportView({
     setIsDeleting(false);
     setShowDeleteConfirm(null);
     setSelectedTransaction(null);
+  };
+
+  const downloadTransactionPDF = (trx: any) => {
+    const doc = new jsPDF({
+      unit: 'mm',
+      format: [80, 150] // receipt size
+    });
+
+    // Custom Receipt Header
+    doc.setFontSize(12);
+    doc.text('STRUK PENJUALAN', 40, 10, { align: 'center' });
+    doc.setFontSize(8);
+    doc.text('------------------------------------------', 40, 14, { align: 'center' });
+    
+    // Header Info
+    doc.setFontSize(7);
+    doc.text(`ID:`, 5, 18);
+    doc.text(`${trx.id}`, 15, 18);
+    
+    doc.text(`Tgl:`, 5, 22);
+    doc.text(`${new Date(trx.date).toLocaleString('id-ID')}`, 15, 22);
+    
+    doc.text(`Cust:`, 5, 26);
+    doc.text(`${trx.customerName || 'Umum'}`, 15, 26);
+    
+    doc.setFontSize(8);
+    doc.text('------------------------------------------', 40, 30, { align: 'center' });
+
+    // Table with better wrapping
+    autoTable(doc, {
+      startY: 32,
+      head: [['Item', 'Qty', 'Total']],
+      body: trx.items.map((i: any) => [
+        i.name + (i.variantName ? `\n(${i.variantName})` : ''),
+        i.quantity,
+        formatCurrency(i.subtotal).replace('Rp ', '')
+      ]),
+      theme: 'plain',
+      styles: { 
+        fontSize: 7, 
+        cellPadding: 1, 
+        font: 'helvetica',
+        valign: 'middle',
+        overflow: 'linebreak'
+      },
+      headStyles: { fontStyle: 'bold', halign: 'left' },
+      columnStyles: {
+        0: { cellWidth: 38 },
+        1: { cellWidth: 8, halign: 'center' },
+        2: { cellWidth: 24, halign: 'right' }
+      },
+      margin: { left: 5, right: 5 }
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY + 4;
+    doc.setFontSize(8);
+    doc.text('------------------------------------------', 40, finalY, { align: 'center' });
+    
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text('TOTAL:', 5, finalY + 5);
+    doc.text(formatCurrency(trx.total), 75, finalY + 5, { align: 'right' });
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text(`Metode: ${trx.paymentMethod || 'CASH'}`, 5, finalY + 10);
+    
+    doc.text('------------------------------------------', 40, finalY + 14, { align: 'center' });
+    doc.setFontSize(7);
+    doc.text('Terima Kasih atas Kunjungan Anda', 40, finalY + 18, { align: 'center' });
+
+    doc.save(`struk-${trx.id}.pdf`);
   };
 
   const generatePDF = (shouldPrint = false) => {
@@ -320,42 +393,42 @@ export default function ReportView({
     if (startDate && tDate < startDate) return false;
     if (endDate && tDate > endDate) return false;
     return true;
-  });
+  }).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const filteredExpenses = expenses.filter((e: any) => {
     const eDate = e.date.split('T')[0];
     if (startDate && eDate < startDate) return false;
     if (endDate && eDate > endDate) return false;
     return true;
-  });
+  }).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const filteredDigitalTopups = digitalTopups.filter((tp: any) => {
     const tpDate = tp.date.split('T')[0];
     if (startDate && tpDate < startDate) return false;
     if (endDate && tpDate > endDate) return false;
     return true;
-  });
+  }).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const filteredStockMovements = stockMovements.filter((mov: any) => {
     const movDate = mov.date.split('T')[0];
     if (startDate && movDate < startDate) return false;
     if (endDate && movDate > endDate) return false;
     return true;
-  });
+  }).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const filteredTransfers = (transfers || []).filter((t: any) => {
     const tDate = t.date.split('T')[0];
     if (startDate && tDate < startDate) return false;
     if (endDate && tDate > endDate) return false;
     return true;
-  });
+  }).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const filteredHistory = (cashBankHistory || []).filter((h: any) => {
     const hDate = h.date.split('T')[0];
     if (startDate && hDate < startDate) return false;
     if (endDate && hDate > endDate) return false;
     return true;
-  });
+  }).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const tabs = [
     { id: 'sales', label: 'Penjualan' },
@@ -475,7 +548,7 @@ export default function ReportView({
             </div>
           </div>
         );
-      case 'sales':
+    case 'sales':
         const totalSalesVal = filteredTransactions.reduce((acc: number, t: any) => acc + t.total, 0);
         return (
           <div className="flex flex-col h-full">
@@ -486,7 +559,14 @@ export default function ReportView({
             <div className="overflow-auto">
               <table className="w-full text-left">
                 <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b">
-                  <tr><th className="px-6 py-4">ID Transaksi</th><th className="px-6 py-4">Customer</th><th className="px-6 py-4">Total</th><th className="px-6 py-4">Metode</th></tr>
+                  <tr>
+                    <th className="px-6 py-4">ID Transaksi</th>
+                    <th className="px-6 py-4">Tanggal</th>
+                    <th className="px-6 py-4">Customer</th>
+                    <th className="px-6 py-4">Total</th>
+                    <th className="px-6 py-4">Metode</th>
+                    <th className="px-6 py-4 text-right">PDF</th>
+                  </tr>
                 </thead>
                 <tbody className="divide-y text-sm font-bold">
                   {filteredTransactions.map((t: any) => (
@@ -499,9 +579,22 @@ export default function ReportView({
                           {t.id}
                         </button>
                       </td>
+                      <td className="px-6 py-4 text-[10px] text-slate-400">
+                        {new Date(t.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        <div className="text-[9px] opacity-60">{new Date(t.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
+                      </td>
                       <td className="px-6 py-4">{t.customerName}</td>
                       <td className="px-6 py-4 text-emerald-600">{formatCurrency(t.total)}</td>
                       <td className="px-6 py-4 uppercase text-[10px] tracking-widest">{t.paymentMethod}</td>
+                      <td className="px-6 py-4 text-right">
+                        <button 
+                          onClick={() => downloadTransactionPDF(t)}
+                          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                          title="Download Struk PDF"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

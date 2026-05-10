@@ -34,6 +34,9 @@ export default function StockView({
   const [editingSupplier, setEditingSupplier] = useState<any>(null);
   const [editingReason, setEditingReason] = useState<any>(null);
 
+  const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
+  const categories = React.useMemo(() => Array.from(new Set(products.map((p: any) => p.category))).filter(Boolean).sort(), [products]);
+
   const filteredProducts = products.filter((p:any) => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.code.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const sortedProducts = React.useMemo(() => {
@@ -249,19 +252,23 @@ export default function StockView({
     setSelectedReturnReason('');
   };
 
-  const logMovement = (productId: string, productName: string, type: 'in' | 'out' | 'adjustment' | 'return', quantity: number, description: string, supplierId?: string, returnReason?: string) => {
+  const logMovement = (productId: string, productName: string, type: 'in' | 'out' | 'adjustment' | 'return', quantity: number, description: string, supplierId?: string, returnReason?: string, variantId?: string, variantName?: string) => {
     if (quantity === 0) return;
-    const newMovement = {
+    const newMovement: any = {
       id: `MOV-${Date.now()}-${Math.floor(Math.random() * 1000000)}`,
       productId,
       productName,
       type,
       quantity,
       date: new Date().toISOString(),
-      description,
-      supplierId,
-      returnReason
+      description
     };
+
+    if (supplierId) newMovement.supplierId = supplierId;
+    if (returnReason) newMovement.returnReason = returnReason;
+    if (variantId) newMovement.variantId = variantId;
+    if (variantName) newMovement.variantName = variantName;
+
     setStockMovements((prev: any) => [newMovement, ...prev]);
   };
 
@@ -326,11 +333,12 @@ export default function StockView({
         </div>
         
         <button 
-          onClick={() => {
-            setShowModal({ name: '', code: '', category: '', buyPrice: 0, sellPrice: 0, stock: 0, minStock: 5 });
-            setModalMode('new');
-            setQtyInput(0);
-          }} 
+            onClick={() => {
+              setShowModal({ name: '', code: '', category: '', buyPrice: 0, sellPrice: 0, stock: undefined, minStock: undefined });
+              setModalMode('new');
+              setQtyInput(0);
+              setIsAddingNewCategory(false);
+            }} 
           className="w-full bg-slate-900 text-white px-6 py-4 rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl shadow-slate-200 uppercase text-[10px] tracking-[0.2em] transition-all hover:bg-slate-800 active:scale-95 mb-1"
         >
           <Plus className="w-4 h-4" /> 
@@ -552,7 +560,47 @@ export default function StockView({
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Kategori</label>
-                    <input required className="w-full bg-slate-50 px-4 py-3.5 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-slate-200 outline-none transition-all" value={showModal.category} onChange={e => setShowModal({...showModal, category: e.target.value})} readOnly={showModal.id !== undefined && modalMode !== 'adjust'} />
+                    {isAddingNewCategory ? (
+                      <div className="flex gap-2">
+                        <input 
+                          required 
+                          className="flex-1 bg-slate-50 px-4 py-3.5 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-slate-200 outline-none transition-all" 
+                          value={showModal.category || ''} 
+                          onChange={e => setShowModal({...showModal, category: e.target.value})} 
+                          placeholder="Ketik Kategori Baru..."
+                          autoFocus
+                        />
+                        <button 
+                          type="button" 
+                          onClick={() => setIsAddingNewCategory(false)}
+                          className="px-4 bg-slate-100 rounded-2xl hover:bg-slate-200 text-slate-400 font-bold transition-all"
+                          title="Kembali ke Dropdown"
+                        >
+                          Batal
+                        </button>
+                      </div>
+                    ) : (
+                      <select 
+                        required
+                        className="w-full bg-slate-50 px-4 py-3.5 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-slate-200 outline-none transition-all appearance-none cursor-pointer" 
+                        value={showModal.category || ''} 
+                        onChange={e => {
+                          if (e.target.value === 'NEW_CATEGORY') {
+                            setIsAddingNewCategory(true);
+                            setShowModal({...showModal, category: ''});
+                          } else {
+                            setShowModal({...showModal, category: e.target.value});
+                          }
+                        }}
+                        disabled={showModal.id !== undefined && modalMode !== 'adjust'}
+                      >
+                        <option value="">Pilih Kategori</option>
+                        {categories.map((cat: any) => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                        <option value="NEW_CATEGORY" className="font-bold text-emerald-600">+ TAMBAH KATEGORI BARU</option>
+                      </select>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Harga Beli</label>
@@ -725,11 +773,11 @@ export default function StockView({
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
                           {modalMode === 'adjust' ? 'Total Stok Baru' : 'Stok Awal'}
                         </label>
-                        <input required type="number" disabled={showModal.hasVariants} className={cn("w-full bg-slate-50 px-4 py-3.5 border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-slate-200 outline-none transition-all", showModal.hasVariants ? "opacity-40 cursor-not-allowed" : "")} value={showModal.hasVariants ? variants.reduce((acc, v) => acc + (Number(v.stock) || 0), 0) : showModal.stock} onChange={e => setShowModal({...showModal, stock: Number(e.target.value)})} />
+                        <input required type="number" disabled={showModal.hasVariants} className={cn("w-full bg-slate-50 px-4 py-3.5 border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-slate-200 outline-none transition-all", showModal.hasVariants ? "opacity-40 cursor-not-allowed" : "")} value={showModal.hasVariants ? variants.reduce((acc, v) => acc + (Number(v.stock) || 0), 0) : (showModal.stock ?? '')} onChange={e => setShowModal({...showModal, stock: Number(e.target.value)})} />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Limit Stok Menipis</label>
-                        <input required type="number" className="w-full bg-slate-50 px-4 py-3.5 border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-slate-200 outline-none transition-all" value={showModal.minStock} onChange={e => setShowModal({...showModal, minStock: Number(e.target.value)})} />
+                        <input required type="number" className="w-full bg-slate-50 px-4 py-3.5 border-none rounded-2xl text-sm font-black focus:ring-2 focus:ring-slate-200 outline-none transition-all" value={showModal.minStock ?? ''} onChange={e => setShowModal({...showModal, minStock: Number(e.target.value)})} />
                       </div>
                     </>
                   )}
