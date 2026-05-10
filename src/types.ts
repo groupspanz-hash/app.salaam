@@ -44,6 +44,7 @@ export interface Transaction {
   items: TransactionItem[];
   subtotal: number;
   discount: number;
+  discountReason?: string;
   tax: number;
   total: number;
   paymentMethod: 'Cash' | 'Transfer' | 'QRIS' | 'E-wallet';

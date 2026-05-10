@@ -22,6 +22,7 @@ export default function TransactionView({
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [customerName, setCustomerName] = useState('');
   const [discount, setDiscount] = useState(0);
+  const [discountReason, setDiscountReason] = useState('');
   const [applyTax, setApplyTax] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('Cash');
   const [showReceipt, setShowReceipt] = useState<any>(null);
@@ -184,6 +185,10 @@ export default function TransactionView({
     if (totalPulseCost > pulseBalance) return alert('Saldo Pulsa Kurang!');
     if (totalTransferCost > transferBalance) return alert('Saldo Transfer Kurang!');
 
+    if (discount !== 0 && !discountReason.trim()) {
+      return alert('Keterangan diskon wajib diisi!');
+    }
+
     const now = Date.now();
     const newTrx = {
       id: `TRX-${now}`,
@@ -192,6 +197,7 @@ export default function TransactionView({
       items: [...cart],
       subtotal: cartSubtotal,
       discount: discount,
+      discountReason: discount !== 0 ? discountReason : '',
       tax: taxAmount,
       total,
       paymentMethod,
@@ -259,7 +265,7 @@ export default function TransactionView({
 
     setTransactions((prev: any) => [newTrx, ...prev]);
     setShowReceipt(newTrx);
-    setCart([]); setCustomerName(''); setDiscount(0); setApplyTax(false);
+    setCart([]); setCustomerName(''); setDiscount(0); setDiscountReason(''); setApplyTax(false);
   };
 
   return (
@@ -492,10 +498,31 @@ export default function TransactionView({
                       placeholder="0" 
                       className="w-full bg-transparent border-none px-1 py-1 text-xs font-black focus:ring-0 outline-none tabular-nums" 
                       value={discount || ''} 
-                      onChange={e => setDiscount(Number(e.target.value))} 
+                      onChange={e => {
+                        const val = Number(e.target.value);
+                        setDiscount(val);
+                        if (val === 0) setDiscountReason('');
+                      }} 
                     />
                   </div>
                 </div>
+
+                {discount !== 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }} 
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 bg-rose-50 border border-rose-100 rounded-xl"
+                  >
+                    <label className="text-[8px] font-black text-rose-400 uppercase tracking-[0.2em] mb-1 block">Keterangan Diskon (Wajib)</label>
+                    <input 
+                      type="text" 
+                      placeholder="MISAL: MEMBER LAMA / PROMO ULTAH" 
+                      className="w-full bg-white border-none rounded-lg px-3 py-2 text-[10px] font-black uppercase focus:ring-1 focus:ring-rose-500 outline-none" 
+                      value={discountReason} 
+                      onChange={e => setDiscountReason(e.target.value)} 
+                    />
+                  </motion.div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -682,6 +709,17 @@ export default function TransactionView({
                   <span>ID Transaksi</span>
                   <span className="text-slate-800">{showReceipt.id}</span>
                 </div>
+                {showReceipt.discount !== 0 && (
+                  <div className="flex flex-col gap-1 py-1 border-y border-slate-100">
+                    <div className="flex justify-between items-center text-[10px] font-black text-rose-500 uppercase">
+                      <span>Diskon</span>
+                      <span>-{formatCurrency(showReceipt.discount)}</span>
+                    </div>
+                    <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest text-left italic">
+                      Ket: {showReceipt.discountReason}
+                    </div>
+                  </div>
+                )}
                 <div className="flex justify-between items-center text-sm font-black text-slate-800 tabular-nums">
                   <span>Total Bayar</span>
                   <span className="text-emerald-600">{formatCurrency(showReceipt.total)}</span>

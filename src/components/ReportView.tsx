@@ -174,22 +174,48 @@ export default function ReportView({
       margin: { left: 5, right: 5 }
     });
 
-    const finalY = (doc as any).lastAutoTable.finalY + 4;
+    const finalYBeforeTotals = (doc as any).lastAutoTable.finalY + 4;
     doc.setFontSize(8);
-    doc.text('------------------------------------------', 40, finalY, { align: 'center' });
+    doc.text('------------------------------------------', 40, finalYBeforeTotals, { align: 'center' });
     
+    let currentY = finalYBeforeTotals + 5;
+
+    // Subtotal if discount exists
+    if (trx.discount !== 0) {
+      doc.setFontSize(7);
+      doc.text('SUBTOTAL:', 5, currentY);
+      doc.text(formatCurrency(trx.subtotal), 75, currentY, { align: 'right' });
+      currentY += 4;
+      
+      doc.setFontSize(7);
+      doc.setTextColor(220, 38, 38); // rose-600
+      doc.text('DISKON:', 5, currentY);
+      doc.text(`-${formatCurrency(trx.discount)}`, 75, currentY, { align: 'right' });
+      currentY += 4;
+      
+      doc.setFontSize(6);
+      doc.setFont('helvetica', 'italic');
+      doc.text(`Ket: ${trx.discountReason || '-'}`, 5, currentY);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(0, 0, 0);
+      currentY += 5;
+    }
+
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    doc.text('TOTAL:', 5, finalY + 5);
-    doc.text(formatCurrency(trx.total), 75, finalY + 5, { align: 'right' });
+    doc.text('TOTAL:', 5, currentY);
+    doc.text(formatCurrency(trx.total), 75, currentY, { align: 'right' });
     
+    currentY += 5;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
-    doc.text(`Metode: ${trx.paymentMethod || 'CASH'}`, 5, finalY + 10);
+    doc.text(`Metode: ${trx.paymentMethod || 'CASH'}`, 5, currentY);
     
-    doc.text('------------------------------------------', 40, finalY + 14, { align: 'center' });
+    currentY += 4;
+    doc.text('------------------------------------------', 40, currentY, { align: 'center' });
+    currentY += 4;
     doc.setFontSize(7);
-    doc.text('Terima Kasih atas Kunjungan Anda', 40, finalY + 18, { align: 'center' });
+    doc.text('Terima Kasih atas Kunjungan Anda', 40, currentY, { align: 'center' });
 
     doc.save(`struk-${trx.id}.pdf`);
   };
